@@ -51,6 +51,8 @@ The latest version brings official support for the newly released Gemma 4 family
 
 ## ✨ Core Features
 
+* * **AI Chat Complete (beta) **: A complete implementation of chat, ask image, transcribe audio, tool/skill usage with thinking mode if needed. 
+
 * **Agent Skills**: Transform your LLM from a conversationalist into a proactive assistant. Use the Agent Skills tile to augment model capabilities with tools like Wikipedia for fact-grounding, interactive maps, and rich visual summary cards. You can even load modular skills from a URL or browse community contributions on GitHub Discussions.
 
 * **AI Chat with Thinking Mode**: Engage in fluid, multi-turn conversations and toggle the new Thinking Mode to peek "under the hood." This feature allows you to see the model’s step-by-step reasoning process, which is perfect for understanding complex problem-solving. Note: Thinking Mode currently works with supported models, starting with the Gemma 4 family.
