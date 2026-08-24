@@ -235,6 +235,27 @@ fun ChatView(
     }
   }
 
+  // Starts a fresh chat session. Triggered from the app bar's "+" button.
+  val startNewChat: () -> Unit = {
+    Log.d(
+      TAG,
+      "Analytics: chat_history, action=click_new_chat, capability_name=${task.id}, model_id=${selectedModel.name}, model_version=${selectedModel.version}",
+    )
+    firebaseAnalytics?.logEvent(
+      GalleryEvent.CHAT_HISTORY.id,
+      Bundle().apply {
+        putString("action", "click_new_chat")
+        putString("capability_name", task.id)
+        putString("model_id", selectedModel.name)
+        putString("model_version", selectedModel.version)
+      },
+    )
+
+    viewModel.currentSessionId = UUID.randomUUID().toString()
+    onResetSessionClicked(selectedModel, emptyList(), /* clearHistory= */ true)
+    scope.launch { drawerState.close() }
+  }
+
   CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
     ModalNavigationDrawer(
       drawerState = drawerState,
@@ -285,25 +306,6 @@ fun ChatView(
               },
               onHistoryItemsDeleteAll = {
                 viewModel.clearAllSessions(context)
-                viewModel.currentSessionId = UUID.randomUUID().toString()
-                onResetSessionClicked(selectedModel, emptyList(), /* clearHistory= */ true)
-                scope.launch { drawerState.close() }
-              },
-              onNewChatClicked = {
-                Log.d(
-                  TAG,
-                  "Analytics: chat_history, action=click_new_chat, capability_name=${task.id}, model_id=${selectedModel.name}, model_version=${selectedModel.version}",
-                )
-                firebaseAnalytics?.logEvent(
-                  GalleryEvent.CHAT_HISTORY.id,
-                  Bundle().apply {
-                    putString("action", "click_new_chat")
-                    putString("capability_name", task.id)
-                    putString("model_id", selectedModel.name)
-                    putString("model_version", selectedModel.version)
-                  },
-                )
-
                 viewModel.currentSessionId = UUID.randomUUID().toString()
                 onResetSessionClicked(selectedModel, emptyList(), /* clearHistory= */ true)
                 scope.launch { drawerState.close() }
@@ -364,6 +366,7 @@ fun ChatView(
                 )
                 scope.launch { drawerState.open() }
               },
+              onNewChatClicked = startNewChat,
             )
           },
         ) { innerPadding ->
