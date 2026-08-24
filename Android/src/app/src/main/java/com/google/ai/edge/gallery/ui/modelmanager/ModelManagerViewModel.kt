@@ -91,7 +91,7 @@ private const val TEXT_INPUT_HISTORY_MAX_SIZE = 50
 private const val MODEL_ALLOWLIST_FILENAME = "model_allowlist.json"
 private const val MODEL_ALLOWLIST_TEST_FILENAME = "model_allowlist_test.json"
 private const val ALLOWLIST_BASE_URL =
-  "https://raw.githubusercontent.com/google-ai-edge/gallery/refs/heads/main/model_allowlists"
+  "https://raw.githubusercontent.com/optimusprime123x/ai/refs/heads/main/model_allowlists"
 
 private const val TEST_MODEL_ALLOW_LIST = ""
 
@@ -169,14 +169,6 @@ data class ModelManagerUiState(
   }
 }
 
-private val RESET_CONVERSATION_TURN_COUNT_CONFIG =
-  NumberSliderConfig(
-    key = ConfigKeys.RESET_CONVERSATION_TURN_COUNT,
-    sliderMin = 1f,
-    sliderMax = 30f,
-    defaultValue = 3f,
-    valueType = ValueType.INT,
-  )
 private val PREDEFINED_LLM_TASK_ORDER =
   listOf(
     BuiltInTaskId.LLM_ASK_IMAGE,
@@ -184,7 +176,6 @@ private val PREDEFINED_LLM_TASK_ORDER =
     BuiltInTaskId.LLM_CHAT,
     BuiltInTaskId.LLM_AGENT_CHAT,
     BuiltInTaskId.LLM_PROMPT_LAB,
-    BuiltInTaskId.LLM_TINY_GARDEN,
     BuiltInTaskId.LLM_MOBILE_ACTIONS,
     BuiltInTaskId.MP_SCRAPBOOK,
   )
@@ -707,7 +698,6 @@ constructor(
         BuiltInTaskId.LLM_ASK_IMAGE,
         BuiltInTaskId.LLM_ASK_AUDIO,
         BuiltInTaskId.LLM_PROMPT_LAB,
-        BuiltInTaskId.LLM_TINY_GARDEN,
         BuiltInTaskId.LLM_MOBILE_ACTIONS,
         BuiltInTaskId.LLM_AGENT_CHAT,
       )
@@ -721,20 +711,12 @@ constructor(
       if (
         (task.id == BuiltInTaskId.LLM_ASK_IMAGE && model.llmSupportImage) ||
           (task.id == BuiltInTaskId.LLM_ASK_AUDIO && model.llmSupportAudio) ||
-          (task.id == BuiltInTaskId.LLM_TINY_GARDEN && model.llmSupportTinyGarden) ||
           (task.id == BuiltInTaskId.LLM_MOBILE_ACTIONS && model.llmSupportMobileActions) ||
           (task.id != BuiltInTaskId.LLM_ASK_IMAGE &&
             task.id != BuiltInTaskId.LLM_ASK_AUDIO &&
-            task.id != BuiltInTaskId.LLM_TINY_GARDEN &&
             task.id != BuiltInTaskId.LLM_MOBILE_ACTIONS)
       ) {
         task.models.add(model)
-        if (task.id == BuiltInTaskId.LLM_TINY_GARDEN) {
-          val newConfigs = model.configs.toMutableList()
-          newConfigs.add(RESET_CONVERSATION_TURN_COUNT_CONFIG)
-          model.configs = newConfigs
-          model.preProcess()
-        }
       }
       task.updateTrigger.value = System.currentTimeMillis()
     }
@@ -1061,12 +1043,6 @@ constructor(
           for (taskType in allowedModel.taskTypes) {
             val task = curTasks.find { it.id == taskType }
             task?.models?.add(model)
-
-            if (task?.id == BuiltInTaskId.LLM_TINY_GARDEN) {
-              val newConfigs = model.configs.toMutableList()
-              newConfigs.add(RESET_CONVERSATION_TURN_COUNT_CONFIG)
-              model.configs = newConfigs
-            }
           }
         }
 
@@ -1223,13 +1199,6 @@ constructor(
       if (model.llmSupportAudio) {
         tasks.get(key = BuiltInTaskId.LLM_ASK_AUDIO)?.models?.add(model)
       }
-      if (model.llmSupportTinyGarden) {
-        tasks.get(key = BuiltInTaskId.LLM_TINY_GARDEN)?.models?.add(model)
-        val newConfigs = model.configs.toMutableList()
-        newConfigs.add(RESET_CONVERSATION_TURN_COUNT_CONFIG)
-        model.configs = newConfigs
-        model.preProcess()
-      }
       if (model.llmSupportMobileActions) {
         tasks.get(key = BuiltInTaskId.LLM_MOBILE_ACTIONS)?.models?.add(model)
       }
@@ -1276,7 +1245,6 @@ constructor(
     val llmMaxToken = info.llmConfig.defaultMaxTokens
     val llmSupportImage = info.llmConfig.supportImage
     val llmSupportAudio = info.llmConfig.supportAudio
-    val llmSupportTinyGarden = info.llmConfig.supportTinyGarden
     val llmSupportMobileActions = info.llmConfig.supportMobileActions
     val llmSupportThinking = info.llmConfig.supportThinking
     val llmSupportSpeculativeDecoding = info.llmConfig.supportSpeculativeDecoding
@@ -1323,7 +1291,6 @@ constructor(
         imported = true,
         llmSupportImage = llmSupportImage,
         llmSupportAudio = llmSupportAudio,
-        llmSupportTinyGarden = llmSupportTinyGarden,
         llmSupportMobileActions = llmSupportMobileActions,
         capabilities = capabilities.toList(),
         capabilityToTaskTypes = capabilityToTaskTypes.toMap(),

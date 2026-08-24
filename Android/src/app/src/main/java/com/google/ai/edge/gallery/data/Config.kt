@@ -66,12 +66,6 @@ object ConfigKeys {
     ConfigKey("support_image", "Support image", R.string.config_label_support_image)
   val SUPPORT_AUDIO =
     ConfigKey("support_audio", "Support audio", R.string.config_label_support_audio)
-  val SUPPORT_TINY_GARDEN =
-    ConfigKey(
-      "support_tiny_garden",
-      "Support tiny garden",
-      R.string.config_label_support_tiny_garden,
-    )
   val SUPPORT_MOBILE_ACTIONS =
     ConfigKey(
       "support_mobile_actions",
@@ -119,12 +113,6 @@ object ConfigKeys {
   val NAME = ConfigKey("name", "Name", R.string.name)
   val MODEL_TYPE = ConfigKey("model_type", "Model type", R.string.config_label_model_type)
   val MODEL = ConfigKey("model", "Model", R.string.config_label_model)
-  val RESET_CONVERSATION_TURN_COUNT =
-    ConfigKey(
-      "reset_conversation_turn_count",
-      "Number of turns before the conversation resets",
-      R.string.config_label_reset_conversation_turn_count,
-    )
   val PREFILL_TOKENS =
     ConfigKey("prefill_tokens", "Prefill tokens", R.string.config_label_prefill_tokens)
   val DECODE_TOKENS =

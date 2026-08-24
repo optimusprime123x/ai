@@ -602,8 +602,6 @@
   <string name="config_label_support_image" translatable="false">Support image</string>
   <!-- Label for the 'Support audio' option in the model configuration dialog. -->
   <string name="config_label_support_audio" translatable="false">Support audio</string>
-  <!-- Label for the 'Support tiny garden' option in the model configuration dialog. -->
-  <string name="config_label_support_tiny_garden" translatable="false">Support tiny garden</string>
   <!-- Label for the 'Support mobile actions' option in the model configuration dialog. -->
   <string name="config_label_support_mobile_actions" translatable="false">Support mobile actions</string>
   <!-- Label for the 'Support thinking' option in the model configuration dialog. -->
@@ -635,7 +633,6 @@
   <!-- Label for the 'Model' option in the model configuration dialog. -->
   <string name="config_label_model" translatable="false">Model</string>
   <!-- Label for the 'Number of turns before the conversation resets' option in the model configuration dialog. -->
-  <string name="config_label_reset_conversation_turn_count" translatable="false">Number of turns before the conversation resets</string>
   <!-- Label for the 'Prefill tokens' option in the model configuration dialog. -->
   <string name="config_label_prefill_tokens" translatable="false">Prefill tokens</string>
   <!-- Label for the 'Decode tokens' option in the model configuration dialog. -->
@@ -720,7 +717,6 @@
   <string name="task_label_prompt_lab" translatable="false">Prompt Lab</string>
   <string name="task_label_ask_image" translatable="false">Ask Image</string>
   <string name="task_label_audio_scribe" translatable="false">Audio Scribe</string>
-  <string name="task_label_tiny_garden" translatable="false">Tiny Garden</string>
   <string name="task_label_agent_skills" translatable="false">Agent Skills</string>
   <!-- Description for the AI Chat task. [CHAR_LIMIT=100] -->
   <string name="task_desc_ai_chat" translatable="true" description="Description for the AI Chat task. [CHAR_LIMIT=90]">Chat with on-device large language models</string>
@@ -763,8 +759,5 @@
   <!-- Label for the Generate QR code skill chip. [CHAR_LIMIT=20] -->
   <string name="skill_chip_generate_qr_code_label" translatable="true" description="Label for the Generate QR code skill chip. [CHAR_LIMIT=30]">Generate QR code</string>
   <!-- Description for the Mobile Actions task. [CHAR_LIMIT=100] -->
-  <string name="task_desc_mobile_actions" translatable="true" description="Description for the Mobile Actions task. [CHAR_LIMIT=91]">Perform various device actions through Function Gemma</string><!-- Description for the Tiny Garden task. [CHAR_LIMIT=300] -->
-  <string name="task_desc_tiny_garden" translatable="true" description="Description for the Tiny Garden task. [CHAR_LIMIT=468]">Use natural language to plant, water, and harvest in this fully offline mini-game.\n\nNote: This is powered by the experimental FunctionGemma model optimized for latency. Due to its compact size (270M), it works well on simple instructions but responses may vary to more complex interactions.</string>
-  <!-- Short description for the Tiny Garden task. [CHAR_LIMIT=35] -->
-  <string name="task_short_desc_tiny_garden" translatable="true" description="Short description for the Tiny Garden task. [CHAR_LIMIT=45]">Use natural language to plant</string>
+  <string name="task_desc_mobile_actions" translatable="true" description="Description for the Mobile Actions task. [CHAR_LIMIT=91]">Perform various device actions through Function Gemma</string>
 </resources>
