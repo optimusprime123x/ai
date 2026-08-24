@@ -21,6 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.google.ai.edge.gallery.R
+import com.google.ai.edge.gallery.customtasks.agentchat.agentSkillTopK
+import com.google.ai.edge.gallery.customtasks.agentchat.agentSkillTopKAdjusted
+import com.google.ai.edge.gallery.data.BuiltInTaskId
 import com.google.ai.edge.gallery.data.ConfigKeys
 import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.ModelCapability
@@ -82,6 +85,12 @@ fun PreInitConfigDialog(
       // Apply and persist the config values, then initialize the model.
       model.configValues = curConfigValues
       modelManagerViewModel.saveModelConfigValues(model = model)
+      // Mirror the app-bar config dialog's Agent Skills TopK bookkeeping so a TopK chosen here
+      // isn't silently reset to greedy on the next task entry.
+      if (task.id == BuiltInTaskId.LLM_AGENT_CHAT) {
+        model.agentSkillTopKAdjusted = true
+        model.agentSkillTopK = curConfigValues[ConfigKeys.TOPK.label]
+      }
       modelManagerViewModel.updateConfigValuesUpdateTrigger()
       onConfirmed()
     },

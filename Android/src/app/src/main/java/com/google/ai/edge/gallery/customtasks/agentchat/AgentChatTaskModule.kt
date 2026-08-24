@@ -123,6 +123,47 @@ const val DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY =
 
 val DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED = DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY.trimIndent()
 
+// The default system prompt for the merged chat task (AI Chat Complete) with skills and MCP tools:
+// unlike the agent routing prompts above, it answers ordinary requests directly and only reaches
+// for skills/tools when they actually help.
+const val MERGED_DEFAULT_SYSTEM_PROMPT =
+  """
+  You are a helpful AI assistant. Answer the user's questions and complete their tasks directly, using your own knowledge and reasoning.
+
+  You also have optional skills and MCP tools available:
+
+  --- SKILLS ---
+  ___SKILLS___
+
+  --- MCP TOOLS ---
+  ___TOOLS___
+
+  Use them only when they clearly help with the user's request:
+  - If a skill from the list is relevant, use the `load_skill` tool to read its instructions and follow them exactly to complete the task.
+  - If an MCP tool from the list is relevant, call the `runMcpTool` tool with `toolName` (the exact name from the list) and `input` (a JSON object matching the tool's input schema).
+  - Otherwise, answer normally as a conversational assistant. Never reply that no skill or tool was found — just respond to the request yourself.
+  """
+
+val MERGED_DEFAULT_SYSTEM_PROMPT_TRIMMED = MERGED_DEFAULT_SYSTEM_PROMPT.trimIndent()
+
+// The default system prompt for the merged chat task with only skills.
+const val MERGED_DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY =
+  """
+  You are a helpful AI assistant. Answer the user's questions and complete their tasks directly, using your own knowledge and reasoning.
+
+  You also have optional skills available:
+
+  --- SKILLS ---
+  ___SKILLS___
+
+  Use them only when they clearly help with the user's request:
+  - If a skill from the list is relevant, use the `load_skill` tool to read its instructions and follow them exactly to complete the task.
+  - Otherwise, answer normally as a conversational assistant. Never reply that no relevant skill was found — just respond to the request yourself.
+  """
+
+val MERGED_DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED =
+  MERGED_DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY.trimIndent()
+
 open class AgentChatTask
 @Inject
 constructor(
@@ -245,7 +286,7 @@ constructor(
       sourceCodeUrl =
         "https://github.com/google-ai-edge/gallery/blob/main/Android/src/app/src/main/java/com/google/ai/edge/gallery/customtasks/agentchat/",
       textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
-      defaultSystemPrompt = DEFAULT_SYSTEM_PROMPT_TRIMMED,
+      defaultSystemPrompt = MERGED_DEFAULT_SYSTEM_PROMPT_TRIMMED,
       hideFromTaskList = true,
       // Hidden tasks are skipped when task-list indices are assigned, but the index drives the
       // icon shape and colors; 3 matches the classic AI Chat tile.
@@ -314,14 +355,23 @@ internal object AgentChatTaskModule {
 // Check whether the system prompt is the default one.
 fun isDefaultSystemPrompt(prompt: String): Boolean {
   return prompt == DEFAULT_SYSTEM_PROMPT_TRIMMED ||
-    prompt == DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED
+    prompt == DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED ||
+    prompt == MERGED_DEFAULT_SYSTEM_PROMPT_TRIMMED ||
+    prompt == MERGED_DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED
 }
 
-// Returns the effective default system prompt depending on whether MCP tools are enabled.
+// Returns the effective default system prompt depending on whether MCP tools are enabled. Each
+// task family (agent routing vs. merged chat) swaps between its own with-tools and skills-only
+// variants; custom prompts pass through unchanged.
 fun getEffectiveBaseSystemPrompt(currentPrompt: String, hasMcpTools: Boolean): String {
-  return if (isDefaultSystemPrompt(currentPrompt)) {
-    if (hasMcpTools) DEFAULT_SYSTEM_PROMPT_TRIMMED else DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED
-  } else {
-    currentPrompt
+  return when (currentPrompt) {
+    MERGED_DEFAULT_SYSTEM_PROMPT_TRIMMED,
+    MERGED_DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED ->
+      if (hasMcpTools) MERGED_DEFAULT_SYSTEM_PROMPT_TRIMMED
+      else MERGED_DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED
+    DEFAULT_SYSTEM_PROMPT_TRIMMED,
+    DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED ->
+      if (hasMcpTools) DEFAULT_SYSTEM_PROMPT_TRIMMED else DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED
+    else -> currentPrompt
   }
 }

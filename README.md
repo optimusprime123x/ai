@@ -22,6 +22,7 @@
 * Sign every build with a fixed keystore so newer builds install as updates instead of requiring a reinstall.
 * Fix a config-dialog crash when restoring saved settings from an older app version, and bump to version 1.2.0.
 * Name the home screen's merged chat tile "AI Chat Complete", fix the crash when opening it, and bump to version 1.3.0.
+* Give AI Chat Complete its own chat-first system prompt and empty state, keep the Agent Skills greedy TopK override out of it (and out of the saved defaults), and bump to version 1.4.0.
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 
