@@ -352,8 +352,12 @@ constructor(
       return
     }
 
-    // Delete the model files first.
-    deleteModel(model = model, removeImportedFromModelList = false)
+    // Resume a partial download of the same model version instead of wiping it. Otherwise delete
+    // the model files first (which also resets an updatable model to its latest version, so
+    // updates never resume a stale file).
+    if (model.updatable || !isModelPartiallyDownloaded(model)) {
+      deleteModel(model = model, removeImportedFromModelList = false)
+    }
 
     // Start to send download request.
     downloadRepository.downloadModel(

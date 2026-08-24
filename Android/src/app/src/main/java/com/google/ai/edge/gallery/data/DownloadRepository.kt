@@ -30,8 +30,11 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
@@ -100,7 +103,11 @@ class DefaultDownloadRepository(
   ) {
     // Create input data.
     val builder = Data.Builder()
-    val totalBytes = model.totalBytes + model.extraDataFiles.sumOf { it.sizeInBytes }
+    // Compute from the per-file sizes directly: model.totalBytes already includes the extra data
+    // files (see Model.preProcess), so adding them again would inflate the worker's completeness
+    // check and make multi-file downloads fail as "incomplete".
+    val fileSizes = listOf(model.sizeInBytes) + model.extraDataFiles.map { it.sizeInBytes }
+    val totalBytes = fileSizes.sum()
     val inputDataBuilder =
       builder
         .putString(KEY_MODEL_NAME, model.name)
@@ -114,6 +121,7 @@ class DefaultDownloadRepository(
         .putBoolean(KEY_MODEL_IS_ZIP, model.isZip)
         .putString(KEY_MODEL_UNZIPPED_DIR, model.unzipDir)
         .putLong(KEY_MODEL_TOTAL_BYTES, totalBytes)
+        .putString(KEY_MODEL_FILE_SIZES, fileSizes.joinToString(","))
         .putBoolean(KEY_MODEL_IS_IMPORTED, model.imported)
 
     if (model.extraDataFiles.isNotEmpty()) {
@@ -133,6 +141,11 @@ class DefaultDownloadRepository(
     val downloadWorkRequest =
       OneTimeWorkRequestBuilder<DownloadWorker>()
         .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+        // Wait for connectivity instead of failing immediately, and back off between the
+        // worker's transient-error retries so a network dropout doesn't kill a multi-GB
+        // download. (Expedited work supports network constraints and backoff, just not delays.)
+        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, java.util.concurrent.TimeUnit.SECONDS)
         .setInputData(inputData)
         .addTag("$MODEL_NAME_TAG:${model.name}")
         .addTag("$TASK_ID_TAG:${task?.id ?: ""}")
