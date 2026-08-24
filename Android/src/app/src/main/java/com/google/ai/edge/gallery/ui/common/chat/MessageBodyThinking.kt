@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,9 +55,13 @@ fun MessageBodyThinking(
 ) {
   var isExpanded by remember { mutableStateOf(false) }
 
-  // Auto-expand while thinking is in progress
-  if (inProgress) {
-    isExpanded = true
+  // Auto-expand when thinking starts. This must only fire on the transition — setting it on every
+  // recomposition would snap the section back open on each streamed token, making it impossible to
+  // collapse while generation is running.
+  LaunchedEffect(inProgress) {
+    if (inProgress) {
+      isExpanded = true
+    }
   }
 
   Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
