@@ -88,6 +88,7 @@ import com.google.ai.edge.gallery.data.ModelDownloadStatusType
 import com.google.ai.edge.gallery.data.Task
 import com.google.ai.edge.gallery.firebaseAnalytics
 import com.google.ai.edge.gallery.ui.common.ModelPageAppBar
+import com.google.ai.edge.gallery.ui.common.PreInitConfigDialog
 import com.google.ai.edge.gallery.ui.common.copyBitmapToClipboard
 import com.google.ai.edge.gallery.ui.common.saveBitmapToMediaStore
 import com.google.ai.edge.gallery.ui.common.shareBitmap
@@ -187,15 +188,34 @@ fun ChatView(
     }
   }
 
-  // Initialize model when model/download state changes.
+  // Show the configuration dialog before initializing the model. The model is only initialized
+  // after the user confirms (or dismisses) the dialog.
+  var modelAwaitingConfig by remember { mutableStateOf<Model?>(null) }
   val curDownloadStatus = modelManagerUiState.modelDownloadStatus[selectedModel.name]
   LaunchedEffect(curDownloadStatus, selectedModel.name) {
     if (!navigatingUp) {
       if (curDownloadStatus?.status == ModelDownloadStatusType.SUCCEEDED) {
-        Log.d(TAG, "Initializing model '${selectedModel.name}' from ChatView launched effect")
-        modelManagerViewModel.initializeModel(context, task = task, model = selectedModel)
+        if (selectedModel.instance != null) {
+          // Already initialized (e.g. after a config change). No need to show the dialog.
+          modelManagerViewModel.initializeModel(context, task = task, model = selectedModel)
+        } else {
+          Log.d(TAG, "Showing pre-initialization config dialog for '${selectedModel.name}'")
+          modelAwaitingConfig = selectedModel
+        }
       }
     }
+  }
+  modelAwaitingConfig?.let { pendingModel ->
+    PreInitConfigDialog(
+      task = task,
+      model = pendingModel,
+      modelManagerViewModel = modelManagerViewModel,
+      onConfirmed = {
+        modelAwaitingConfig = null
+        Log.d(TAG, "Initializing model '${pendingModel.name}' after config confirmation")
+        modelManagerViewModel.initializeModel(context, task = task, model = pendingModel)
+      },
+    )
   }
 
   LaunchedEffect(sendMessageTrigger) {

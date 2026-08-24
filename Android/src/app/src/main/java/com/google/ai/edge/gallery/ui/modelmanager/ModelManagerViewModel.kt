@@ -283,6 +283,7 @@ constructor(
     for (task in curTasks) {
       for (model in task.models) {
         model.preProcess()
+        restoreSavedConfigValues(model = model)
       }
       // Move the model that is best for this task to the front.
       val bestModel = task.models.find { it.bestForTaskIds.contains(task.id) }
@@ -1301,8 +1302,31 @@ constructor(
         runtimeType = RuntimeType.LITERT_LM,
       )
     model.preProcess()
+    restoreSavedConfigValues(model = model)
 
     return model
+  }
+
+  /** Persists the model's current config values so they become its defaults next time. */
+  fun saveModelConfigValues(model: Model) {
+    dataStoreRepository.saveModelConfigValues(modelName = model.name, values = model.configValues)
+  }
+
+  /**
+   * Restores previously saved config tweaks for the given model on top of its default config
+   * values. Only keys that are still present in the model's configs are applied, and numbers are
+   * coerced back to floats (JSON deserialization yields doubles).
+   */
+  private fun restoreSavedConfigValues(model: Model) {
+    val savedValues = dataStoreRepository.readModelConfigValues(modelName = model.name) ?: return
+    val newConfigValues = model.configValues.toMutableMap()
+    for ((key, value) in savedValues) {
+      if (!newConfigValues.containsKey(key)) {
+        continue
+      }
+      newConfigValues[key] = if (value is Double) value.toFloat() else value
+    }
+    model.configValues = newConfigValues
   }
 
   private fun groupTasksByCategory(): Map<String, List<Task>> {

@@ -56,7 +56,9 @@
           "commitHash": "7fa1d78473894f7e736a21d920c3aa80f950c0db"
         }
       ],
-      "updateInfo": "The updated model now leverages Gemma 4's built-in Multi Token Prediction (MTP) for faster decode on select workloads. You can enable or disable MTP using a new toggle in chat configuration."
+      "updateInfo": "The updated model now leverages Gemma 4's built-in Multi Token Prediction (MTP) for faster decode on select workloads. You can enable or disable MTP using a new toggle in chat configuration.",
+      "recommendedRamMinGb": 6,
+      "recommendedRamMaxGb": 8
     },
     {
       "name": "Gemma-4-E4B-it",
@@ -114,7 +116,8 @@
           "commitHash": "9695417f248178c63a9f318c6e0c56cb917cb837"
         }
       ],
-      "updateInfo": "The updated model now leverages Gemma 4's built-in Multi Token Prediction (MTP) for faster decode on select workloads. You can enable or disable MTP using a new toggle in chat configuration."
+      "updateInfo": "The updated model now leverages Gemma 4's built-in Multi Token Prediction (MTP) for faster decode on select workloads. You can enable or disable MTP using a new toggle in chat configuration.",
+      "recommendedRamMinGb": 8
     },
     {
       "name": "SuperGemma4-E4B-abliterated",

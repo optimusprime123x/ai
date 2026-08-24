@@ -289,6 +289,14 @@ data class Model(
   /** Whether the LLM model is uncensored (e.g. an abliterated variant with fewer refusals). */
   val uncensored: Boolean = false,
 
+  /**
+   * Device RAM range (in GB) for which this model is recommended. The "Recommended" badge is shown
+   * when the device's RAM is >= [recommendedRamMinGb] and < [recommendedRamMaxGb] (no upper bound
+   * when null).
+   */
+  val recommendedRamMinGb: Int? = null,
+  val recommendedRamMaxGb: Int? = null,
+
   /** The capabilities of the model. */
   val capabilities: List<ModelCapability> = listOf(),
 

@@ -523,6 +523,10 @@
   <string name="model_badge_vision" translatable="true" description="Label for the badge shown on models that support image (vision) input. [CHAR_LIMIT=20]">Vision</string>
   <!-- Label for the badge shown on uncensored (abliterated) model variants. -->
   <string name="model_badge_uncensored" translatable="true" description="Label for the badge shown on uncensored (abliterated) model variants. [CHAR_LIMIT=20]">Uncensored</string>
+  <!-- Label for the badge shown on models recommended for the device's RAM. -->
+  <string name="model_badge_recommended" translatable="true" description="Label for the badge shown on models recommended for the device's RAM. [CHAR_LIMIT=20]">Recommended</string>
+  <!-- Subtitle shown in the configuration dialog before a model is initialized. -->
+  <string name="config_dialog_pre_init_subtitle" translatable="true" description="Subtitle shown under the Configurations heading before a model is initialized. [CHAR_LIMIT=70]">Tweak things if you want. Not sure? just press OK</string>
   <!-- Content description spoken when the "switch to keyboard" icon is focused. -->
   <string name="cd_switch_to_keyboard" translatable="true" description="Content description for the button to switch the input mode to keyboard text entry. [CHAR_LIMIT=30]">Switch to keyboard</string>
   <!-- Content description spoken when the "switch to voice" icon is focused. -->

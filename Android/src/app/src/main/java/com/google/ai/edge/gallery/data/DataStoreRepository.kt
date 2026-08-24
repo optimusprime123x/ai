@@ -28,6 +28,8 @@ import com.google.ai.edge.gallery.proto.Skill
 import com.google.ai.edge.gallery.proto.Skills
 import com.google.ai.edge.gallery.proto.Theme
 import com.google.ai.edge.gallery.proto.UserData
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
@@ -85,6 +87,15 @@ interface DataStoreRepository {
   fun isGemmaTermsOfUseAccepted(): Boolean
 
   fun acceptGemmaTermsOfUse()
+
+  /**
+   * Saves the given model config values, keyed by model name, so they can be restored as defaults
+   * the next time the model is used.
+   */
+  fun saveModelConfigValues(modelName: String, values: Map<String, Any>)
+
+  /** Reads the saved config values for the given model, or null if none were saved. */
+  fun readModelConfigValues(modelName: String): Map<String, Any>?
 
   fun addCutout(cutout: Cutout)
 
@@ -288,6 +299,27 @@ class DefaultDataStoreRepository(
     }
   }
 
+
+  override fun saveModelConfigValues(modelName: String, values: Map<String, Any>) {
+    runBlocking {
+      dataStore.updateData { settings ->
+        settings.toBuilder().putModelConfigValues(modelName, Gson().toJson(values)).build()
+      }
+    }
+  }
+
+  override fun readModelConfigValues(modelName: String): Map<String, Any>? {
+    return runBlocking {
+      val settings = dataStore.data.first()
+      val json = settings.modelConfigValuesMap[modelName] ?: return@runBlocking null
+      try {
+        val type = object : TypeToken<Map<String, Any>>() {}.type
+        Gson().fromJson<Map<String, Any>>(json, type)
+      } catch (e: Exception) {
+        null
+      }
+    }
+  }
 
   override fun addCutout(cutout: Cutout) {
     runBlocking {

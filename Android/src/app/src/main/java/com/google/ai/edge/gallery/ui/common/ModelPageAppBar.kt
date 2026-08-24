@@ -211,6 +211,7 @@ fun ModelPageAppBar(
     }
     ConfigDialog(
       title = stringResource(R.string.config_dialog_title),
+      subtitle = stringResource(R.string.config_dialog_pre_init_subtitle),
       configs = modelConfigs,
       initialValues = model.configValues,
       onDismissed = { showConfigDialog = false },
@@ -263,10 +264,11 @@ fun ModelPageAppBar(
           return@ConfigDialog
         }
 
-        // Save the config values to Model.
+        // Save the config values to Model, and persist them as the model's new defaults.
         val oldConfigValues = model.configValues
         model.prevConfigValues = oldConfigValues
         model.configValues = curConfigValues
+        modelManagerViewModel.saveModelConfigValues(model = model)
         if (task.id == BuiltInTaskId.LLM_AGENT_CHAT) {
           model.agentSkillTopKAdjusted = true
           model.agentSkillTopK = curConfigValues[ConfigKeys.TOPK.label]

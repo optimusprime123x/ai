@@ -47,19 +47,26 @@ fun MemoryWarningAlert(onProceeded: () -> Unit, onDismissed: () -> Unit) {
   )
 }
 
-/** Checks if the device's memory is lower than the required minimum for the given model. */
-fun isMemoryLow(context: Context, model: Model): Boolean {
+/** Returns the device's total memory in GB, or null if it cannot be determined. */
+fun getDeviceMemInGb(context: Context): Float? {
   val activityManager =
     context.getSystemService(android.app.Activity.ACTIVITY_SERVICE) as? ActivityManager
+      ?: return null
+  val memoryInfo = ActivityManager.MemoryInfo()
+  activityManager.getMemoryInfo(memoryInfo)
+  var deviceMemInGb = memoryInfo.totalMem / BYTES_IN_GB
+  // API 34+ uses advertisedMem instead of totalMem for better accuracy.
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+    deviceMemInGb = memoryInfo.advertisedMem / BYTES_IN_GB
+  }
+  return deviceMemInGb
+}
+
+/** Checks if the device's memory is lower than the required minimum for the given model. */
+fun isMemoryLow(context: Context, model: Model): Boolean {
+  val deviceMemInGb = getDeviceMemInGb(context)
   val minDeviceMemoryInGb = model.minDeviceMemoryInGb
-  return if (activityManager != null && minDeviceMemoryInGb != null) {
-    val memoryInfo = ActivityManager.MemoryInfo()
-    activityManager.getMemoryInfo(memoryInfo)
-    var deviceMemInGb = memoryInfo.totalMem / BYTES_IN_GB
-    // API 34+ uses advertisedMem instead of totalMem for better accuracy.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-      deviceMemInGb = memoryInfo.advertisedMem / BYTES_IN_GB
-    }
+  return if (deviceMemInGb != null && minDeviceMemoryInGb != null) {
     Log.d(
       TAG,
       "Device memory (GB): $deviceMemInGb. " +

@@ -9,6 +9,7 @@
 * Fix the default model list by self-hosting the model allowlist in this repo; remove Gemma 3/3n and DeepSeek-R1-Distill from the defaults.
 * Remove the Tiny Garden mini-game entirely.
 * Add vision and uncensored badges to model lists, and add the SuperGemma4-E4B-abliterated model to the defaults.
+* Show the configuration dialog before model initialization, remember per-model config tweaks, and add a RAM-based recommended badge.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/google-ai-edge/gallery)](https://github.com/google-ai-edge/gallery/releases)
