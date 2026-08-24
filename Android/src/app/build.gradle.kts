@@ -51,21 +51,28 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  // A fixed keystore so every build — local or CI — carries the same signature and installs as an
+  // update over previous versions (auto-generated debug keys differ per machine, which forces a
+  // reinstall). The key is public by design: it provides update continuity for this fork, not
+  // authenticity. When the file is absent, builds fall back to the default debug signing.
+  val sharedKeystore = file("signing/shared.keystore")
   signingConfigs {
-    // A fixed, committed keystore so every build — local or CI — carries the same signature and
-    // installs as an update over previous versions (auto-generated debug keys differ per machine,
-    // which forces a reinstall). The key is public by design: it provides update continuity for
-    // this fork, not authenticity.
-    create("shared") {
-      storeFile = file("signing/shared.keystore")
-      storePassword = "aiplayground"
-      keyAlias = "aiplayground"
-      keyPassword = "aiplayground"
+    if (sharedKeystore.exists()) {
+      create("shared") {
+        storeFile = sharedKeystore
+        storePassword = "aiplayground"
+        keyAlias = "aiplayground"
+        keyPassword = "aiplayground"
+      }
     }
   }
 
   buildTypes {
-    debug { signingConfig = signingConfigs.getByName("shared") }
+    debug {
+      if (sharedKeystore.exists()) {
+        signingConfig = signingConfigs.getByName("shared")
+      }
+    }
     release {
       // Shrink unused library code and resources. The app's own classes (and the inference
       // runtimes) are kept unobfuscated via proguard-rules.pro to avoid breaking Gson/JNI
@@ -73,7 +80,12 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("shared")
+      signingConfig =
+        if (sharedKeystore.exists()) {
+          signingConfigs.getByName("shared")
+        } else {
+          signingConfigs.getByName("debug")
+        }
     }
   }
 
