@@ -645,24 +645,6 @@ constructor(
    *
    * @return `true` if enabled or not explicitly disabled in settings; `false` if disabled.
    */
-  fun readFirebaseAnalytics(): Boolean {
-    return dataStoreRepository.readFirebaseAnalytics()
-  }
-
-  /**
-   * Updates the user preference for Firebase Analytics data collection right away.
-   *
-   * Persists the setting to on-disk DataStore
-   * (`dataStoreRepository.saveFirebaseAnalytics(enabled)`) and dynamically updates the live
-   * Firebase SDK state via `firebaseAnalytics?.setAnalyticsCollectionEnabled(enabled)`.
-   *
-   * @param enabled `true` to enable diagnostic/analytics gathering; `false` to disable.
-   */
-  fun saveFirebaseAnalytics(enabled: Boolean) {
-    dataStoreRepository.saveFirebaseAnalytics(enabled = enabled)
-    firebaseAnalytics?.setAnalyticsCollectionEnabled(enabled)
-  }
-
   fun getModelUrlResponse(model: Model, accessToken: String? = null): Int {
     try {
       if (model.url.isEmpty()) {

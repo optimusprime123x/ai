@@ -54,6 +54,7 @@ import com.google.ai.edge.gallery.data.ModelDownloadStatusType
 import com.google.ai.edge.gallery.data.RuntimeType
 import com.google.ai.edge.gallery.data.Task
 import com.google.ai.edge.gallery.ui.common.ClickableLink
+import com.google.ai.edge.gallery.ui.common.formatToHourMinSecond
 import com.google.ai.edge.gallery.ui.common.humanReadableSize
 import com.google.ai.edge.gallery.ui.theme.customColors
 import com.google.ai.edge.gallery.ui.theme.labelSmallNarrow
@@ -241,10 +242,10 @@ fun ModelStatusDetails(
             "${downloadStatus.receivedBytes.humanReadableSize(extraDecimalForGbAndAbove = true)} of ${totalSize.humanReadableSize()}"
           if (downloadStatus.bytesPerSecond > 0) {
             sizeLabel = "$sizeLabel · ${downloadStatus.bytesPerSecond.humanReadableSize()} / s"
-            // if (downloadStatus.remainingMs >= 0) {
-            //   sizeLabel =
-            //     "$sizeLabel\n${downloadStatus.remainingMs.formatToHourMinSecond()} left"
-            // }
+            if (downloadStatus.remainingMs >= 0) {
+              sizeLabel =
+                "$sizeLabel\n${downloadStatus.remainingMs.formatToHourMinSecond()} left"
+            }
           }
           if (isPartiallyDownloaded) {
             sizeLabel = "$sizeLabel (resuming...)"

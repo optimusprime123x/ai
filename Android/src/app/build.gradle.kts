@@ -16,8 +16,6 @@
 
 plugins {
   alias(libs.plugins.android.application)
-  // Note: set apply to true to enable google-services (requires google-services.json).
-  alias(libs.plugins.google.services) apply false
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.kotlin.serialization)
@@ -36,8 +34,8 @@ android {
     applicationId = "dev.optimus.aiplayground"
     minSdk = 31
     targetSdk = 37
-    versionCode = 46
-    versionName = "1.4.0"
+    versionCode = 47
+    versionName = "1.5.0"
 
     // Needed for HuggingFace auth workflows.
     // Use the scheme of the "Redirect URLs" in HuggingFace app.
@@ -149,10 +147,10 @@ dependencies {
   implementation(libs.hilt.android)
   implementation(libs.hilt.navigation.compose)
   implementation(libs.play.services.oss.licenses)
-  implementation(platform(libs.firebase.bom))
-  implementation(libs.firebase.analytics)
-  implementation(libs.firebase.messaging)
   implementation(libs.androidx.exifinterface)
+  // Was a transitive dependency of the removed Firebase libraries; SkillManager uses DocumentFile
+  // for folder-based skill imports.
+  implementation(libs.androidx.documentfile)
   implementation(libs.moshi.kotlin)
   kapt(libs.hilt.android.compiler)
   testImplementation(libs.junit)
