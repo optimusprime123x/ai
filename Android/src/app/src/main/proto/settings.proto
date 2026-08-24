@@ -60,7 +60,8 @@ message LlmConfig {
   float default_temperature = 5;
   bool support_image = 6;
   bool support_audio = 7;
-  bool support_tiny_garden = 8;
+  // Field 8 was support_tiny_garden (feature removed).
+  reserved 8;
   bool support_mobile_actions = 9;
   bool support_thinking = 10;
   bool support_speculative_decoding = 11;
@@ -73,13 +74,17 @@ message Settings {
   repeated ImportedModel imported_model = 4;
   // Has the app tos been accepted.
   bool is_tos_accepted = 5;
-  bool has_run_tiny_garden = 6;
+  // Field 6 was has_run_tiny_garden (feature removed).
+  reserved 6;
   bool has_seen_benchmark_comparison_help = 7;
   // Has the Gemma terms of use been accepted.
   bool is_gemma_terms_accepted = 8;
 
   repeated string viewed_promo_id = 10;
   bool disable_firebase_analytics = 11;
+  // Saved model config tweaks, keyed by model name. Values are JSON-encoded maps of config key
+  // labels to values, restored as defaults the next time the model is used.
+  map<string, string> model_config_values = 12;
 }
 
 message McpAuth {

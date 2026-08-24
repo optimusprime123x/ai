@@ -154,6 +154,9 @@ fun ModelNameAndStatus(
       modifier = Modifier.padding(end = 64.dp),
     )
 
+    // Capability badges (e.g. vision, uncensored).
+    ModelBadges(model = model, modifier = Modifier.padding(top = 4.dp))
+
     // Status icon + size + download progress details.
     if (model.runtimeType != RuntimeType.AICORE && showModelSizeAndDownloadProgressLabel) {
       ModelStatusDetails(

@@ -5,6 +5,11 @@
 * Show live generation speed in t/s (with a speedometer icon) during all model generations.
 * Show model name instead of placeholder in chat.
 * Publish the release APK as a workflow artifact and an automatic GitHub release; version 1.0.0.
+* Split release APKs by architecture (arm64-v8a, armeabi-v7a, x86_64) alongside the universal APK.
+* Fix the default model list by self-hosting the model allowlist in this repo; remove Gemma 3/3n and DeepSeek-R1-Distill from the defaults.
+* Remove the Tiny Garden mini-game entirely.
+* Add vision and uncensored badges to model lists, and add the SuperGemma4-E4B-abliterated model to the defaults.
+* Show the configuration dialog before model initialization, remember per-model config tweaks, and add a RAM-based recommended badge.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/google-ai-edge/gallery)](https://github.com/google-ai-edge/gallery/releases)
@@ -18,7 +23,7 @@ AI Edge Gallery is the premier destination for running the world's most powerful
 The latest version brings official support for the newly released Gemma 4 family. As the centerpiece of this release, Gemma 4 allows you to test the cutting edge of on-device AI. Experience advanced reasoning, logic, and creative capabilities without ever sending your data to a server.
 
 
-| **Install the app today from latest release**](https://github.com/optimusprime123x/ai/releases/latest/)
+[**Install the app today from the latest release**](https://github.com/optimusprime123x/ai/releases/latest/)
 
 
 ## App Preview
@@ -45,8 +50,6 @@ The latest version brings official support for the newly released Gemma 4 family
 * **Prompt Lab**: A dedicated workspace to test different prompts and single-turn use cases with granular control over model parameters like temperature and top-k.
 
 * **Mobile Actions**: Unlock offline device controls and automated tasks powered entirely by a finetune of FunctionGemma 270m.
-
-* **Tiny Garden**: A fun, experimental mini-game that uses natural language to plant and harvest a virtual garden using a finetune of FunctionGemma 270m.
 
 * **Model Management & Benchmark**: Gallery is a flexible sandbox for a wide variety of open-source models. Easily download models from the list or load your own custom models. Manage your model library effortlessly and run benchmark tests to understand exactly how each model performs on your specific hardware.
 

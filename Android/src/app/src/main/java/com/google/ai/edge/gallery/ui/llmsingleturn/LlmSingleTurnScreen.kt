@@ -50,10 +50,12 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.core.os.bundleOf
 import com.google.ai.edge.gallery.GalleryEvent
 import com.google.ai.edge.gallery.data.BuiltInTaskId
+import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.ModelDownloadStatusType
 import com.google.ai.edge.gallery.firebaseAnalytics
 import com.google.ai.edge.gallery.ui.common.ErrorDialog
 import com.google.ai.edge.gallery.ui.common.ModelPageAppBar
+import com.google.ai.edge.gallery.ui.common.PreInitConfigDialog
 import com.google.ai.edge.gallery.ui.common.chat.ModelDownloadStatusInfoPanel
 import com.google.ai.edge.gallery.ui.modelmanager.ModelInitializationStatusType
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
@@ -102,18 +104,34 @@ fun LlmSingleTurnScreen(
     }
   }
 
-  // Initialize model when model/download state changes.
+  // Show the configuration dialog before initializing the model. The model is only initialized
+  // after the user confirms (or dismisses) the dialog.
+  var modelAwaitingConfig by remember { mutableStateOf<Model?>(null) }
   val curDownloadStatus = modelManagerUiState.modelDownloadStatus[selectedModel.name]
   LaunchedEffect(curDownloadStatus, selectedModel.name) {
     if (!navigatingUp) {
       if (curDownloadStatus?.status == ModelDownloadStatusType.SUCCEEDED) {
-        Log.d(
-          TAG,
-          "Initializing model '${selectedModel.name}' from LlmsingleTurnScreen launched effect",
-        )
-        modelManagerViewModel.initializeModel(context, task = task, model = selectedModel)
+        if (selectedModel.instance != null) {
+          // Already initialized (e.g. after a config change). No need to show the dialog.
+          modelManagerViewModel.initializeModel(context, task = task, model = selectedModel)
+        } else {
+          Log.d(TAG, "Showing pre-initialization config dialog for '${selectedModel.name}'")
+          modelAwaitingConfig = selectedModel
+        }
       }
     }
+  }
+  modelAwaitingConfig?.let { pendingModel ->
+    PreInitConfigDialog(
+      task = task,
+      model = pendingModel,
+      modelManagerViewModel = modelManagerViewModel,
+      onConfirmed = {
+        modelAwaitingConfig = null
+        Log.d(TAG, "Initializing model '${pendingModel.name}' after config confirmation")
+        modelManagerViewModel.initializeModel(context, task = task, model = pendingModel)
+      },
+    )
   }
 
   val modelInitializationStatus = modelManagerUiState.modelInitializationStatus[selectedModel.name]

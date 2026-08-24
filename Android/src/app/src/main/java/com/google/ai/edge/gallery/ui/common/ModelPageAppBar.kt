@@ -190,14 +190,7 @@ fun ModelPageAppBar(
 
   // Config dialog.
   if (showConfigDialog) {
-    // Remove the reset conversation turn count config for non-tiny-garden tasks.
-    //
-    // This may happen when user imports a model with "enable tiny garden" turned on and use the
-    // model in another non-tiny-garden task.
     val modelConfigs = model.configs.toMutableList()
-    if (task.id != BuiltInTaskId.LLM_TINY_GARDEN) {
-      modelConfigs.removeIf { it.key == ConfigKeys.RESET_CONVERSATION_TURN_COUNT }
-    }
     if (!task.allowCapability(ModelCapability.LLM_THINKING, model)) {
       modelConfigs.removeIf { it.key == ConfigKeys.ENABLE_THINKING }
     }
@@ -218,6 +211,7 @@ fun ModelPageAppBar(
     }
     ConfigDialog(
       title = stringResource(R.string.config_dialog_title),
+      subtitle = stringResource(R.string.config_dialog_pre_init_subtitle),
       configs = modelConfigs,
       initialValues = model.configValues,
       onDismissed = { showConfigDialog = false },
@@ -270,10 +264,11 @@ fun ModelPageAppBar(
           return@ConfigDialog
         }
 
-        // Save the config values to Model.
+        // Save the config values to Model, and persist them as the model's new defaults.
         val oldConfigValues = model.configValues
         model.prevConfigValues = oldConfigValues
         model.configValues = curConfigValues
+        modelManagerViewModel.saveModelConfigValues(model = model)
         if (task.id == BuiltInTaskId.LLM_AGENT_CHAT) {
           model.agentSkillTopKAdjusted = true
           model.agentSkillTopK = curConfigValues[ConfigKeys.TOPK.label]

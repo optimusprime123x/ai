@@ -58,6 +58,17 @@ android {
       signingConfig = signingConfigs.getByName("debug")
     }
   }
+
+  // Per-ABI release APKs plus a universal one. Enabled with -PabiSplits (used by the release
+  // workflow when building from main); PR and local builds produce a single universal APK.
+  splits {
+    abi {
+      isEnable = project.hasProperty("abiSplits")
+      reset()
+      include("arm64-v8a", "armeabi-v7a", "x86_64")
+      isUniversalApk = true
+    }
+  }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
