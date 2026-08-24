@@ -125,7 +125,7 @@
       "modelFile": "supergemma4-e4b-abliterated.litertlm",
       "description": "An unofficial abliterated version of the gemma4-e4b model with significantly lower refusals. Based on Gemma 4 E4B; supports vision input with up to 32K context length.",
       "sizeInBytes": 3654467584,
-      "minDeviceMemoryInGb": 12,
+      "minDeviceMemoryInGb": 8,
       "commitHash": "3cb37a0fe1688c84cdb9faaa273052d82b8ca68b",
       "llmSupportImage": true,
       "uncensored": true,
