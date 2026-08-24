@@ -15,6 +15,8 @@
     build_apk:
       name: Build Android APK
       runs-on: ubuntu-latest
+      permissions:
+        contents: write
       defaults:
         run:
           working-directory: ./Android/src
@@ -31,5 +33,23 @@
           run: echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-37.0"
         - name: Build
           run: ./gradlew assembleRelease
+        - name: Upload release APK
+          uses: actions/upload-artifact@v4
+          with:
+            name: app-release
+            path: Android/src/app/build/outputs/apk/release/app-release.apk
+            if-no-files-found: error
+        - name: Create GitHub release
+          if: github.event_name != 'pull_request'
+          env:
+            GH_TOKEN: ${{ github.token }}
+          run: |
+            VERSION=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)
+            APK_NAME="aiplayground-v$VERSION.apk"
+            cp app/build/outputs/apk/release/app-release.apk "$APK_NAME"
+            gh release create "v$VERSION" "$APK_NAME" \
+              --title "AI Playground v$VERSION" \
+              --notes "Automated release build of version $VERSION." \
+              || gh release upload "v$VERSION" "$APK_NAME" --clobber
   
   
