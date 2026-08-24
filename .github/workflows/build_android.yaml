@@ -31,6 +31,15 @@
           uses: gradle/actions/setup-gradle@v4
         - name: Install Android SDK Platform 37
           run: echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-37.0"
+        - name: Check model allowlist exists for this version
+          run: |
+            VERSION=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)
+            FILE="../../model_allowlists/$(echo "$VERSION" | tr '.' '_').json"
+            if [ ! -f "$FILE" ]; then
+              echo "::error::Missing model allowlist for app version $VERSION. The app loads its default model list from model_allowlists/$(echo "$VERSION" | tr '.' '_').json on the main branch; add it before bumping versionName."
+              exit 1
+            fi
+            echo "Found model allowlist for version $VERSION"
         - name: Build
           # PR builds produce a single universal APK; main builds also produce per-ABI APKs.
           run: |

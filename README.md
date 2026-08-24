@@ -10,6 +10,7 @@
 * Remove the Tiny Garden mini-game entirely.
 * Add vision and uncensored badges to model lists, and add the SuperGemma4-E4B-abliterated model to the defaults.
 * Show the configuration dialog before model initialization, remember per-model config tweaks, and add a RAM-based recommended badge.
+* Bump to version 1.1.0, with a CI guard ensuring every app version ships with its model allowlist.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/google-ai-edge/gallery)](https://github.com/google-ai-edge/gallery/releases)
