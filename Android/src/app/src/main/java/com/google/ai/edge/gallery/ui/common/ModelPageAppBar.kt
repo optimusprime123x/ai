@@ -269,7 +269,7 @@ fun ModelPageAppBar(
         model.prevConfigValues = oldConfigValues
         model.configValues = curConfigValues
         modelManagerViewModel.saveModelConfigValues(model = model)
-        if (task.id == BuiltInTaskId.LLM_AGENT_CHAT) {
+        if (task.id == BuiltInTaskId.LLM_CHAT) {
           model.agentSkillTopKAdjusted = true
           model.agentSkillTopK = curConfigValues[ConfigKeys.TOPK.label]
         }

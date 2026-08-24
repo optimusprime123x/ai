@@ -26,14 +26,12 @@
       "taskTypes": [
         "llm_chat",
         "llm_prompt_lab",
-        "llm_agent_chat",
         "llm_ask_image",
         "llm_ask_audio"
       ],
       "bestForTaskTypes": [
         "llm_chat",
         "llm_prompt_lab",
-        "llm_agent_chat",
         "llm_ask_image",
         "llm_ask_audio"
       ],
@@ -86,14 +84,12 @@
       "taskTypes": [
         "llm_chat",
         "llm_prompt_lab",
-        "llm_agent_chat",
         "llm_ask_image",
         "llm_ask_audio"
       ],
       "bestForTaskTypes": [
         "llm_chat",
         "llm_prompt_lab",
-        "llm_agent_chat",
         "llm_ask_image",
         "llm_ask_audio"
       ],
@@ -141,7 +137,6 @@
       "taskTypes": [
         "llm_chat",
         "llm_prompt_lab",
-        "llm_agent_chat",
         "llm_ask_image"
       ],
       "capabilities": [

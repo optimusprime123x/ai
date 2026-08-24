@@ -17,6 +17,8 @@
 package com.google.ai.edge.gallery.customtasks.agentchat
 
 import android.content.Context
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Forum
 import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
@@ -130,15 +132,16 @@ constructor(
   @AgentChatExecutor private val executor: AgentRuntimeExecutor,
 ) : CustomTask {
   override val task: Task by lazy {
+    // The merged AI Chat task: the regular chat experience (thinking, system prompt, multimodal
+    // input) combined with agent skills and MCP tools.
     Task(
-      id = BuiltInTaskId.LLM_AGENT_CHAT,
-      label = context.getString(R.string.task_label_agent_skills),
+      id = BuiltInTaskId.LLM_CHAT,
+      label = context.getString(R.string.task_label_ai_chat),
       category = Category.LLM,
-      iconVectorResourceId = R.drawable.agent,
-      newFeature = true,
+      icon = Icons.Outlined.Forum,
       models = mutableListOf(),
-      description = context.getString(R.string.task_desc_agent_skills),
-      shortDescription = context.getString(R.string.task_short_desc_agent_skills),
+      description = context.getString(R.string.task_desc_ai_chat),
+      shortDescription = context.getString(R.string.task_short_desc_ai_chat),
       docUrl = "https://github.com/google-ai-edge/LiteRT-LM/blob/main/kotlin/README.md",
       sourceCodeUrl =
         "https://github.com/google-ai-edge/gallery/blob/main/Android/src/app/src/main/java/com/google/ai/edge/gallery/customtasks/agentchat/",

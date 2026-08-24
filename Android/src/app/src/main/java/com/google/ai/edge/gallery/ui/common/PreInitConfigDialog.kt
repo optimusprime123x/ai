@@ -17,6 +17,7 @@
 package com.google.ai.edge.gallery.ui.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.google.ai.edge.gallery.R
@@ -43,25 +44,31 @@ fun PreInitConfigDialog(
 ) {
   val context = LocalContext.current
 
-  val modelConfigs = model.configs.toMutableList()
-  if (!task.allowCapability(ModelCapability.LLM_THINKING, model)) {
-    modelConfigs.removeIf { it.key == ConfigKeys.ENABLE_THINKING }
-  }
-  var supportsSpeculativeDecoding = false
-  // Check if the model file supports speculative decoding.
-  try {
-    com.google.ai.edge.litertlm.Capabilities(model.getPath(context)).use {
-      supportsSpeculativeDecoding = it.hasSpeculativeDecodingSupport()
+  // Computed once per model: probing the model file for capabilities opens it natively, so it
+  // must not run on every recomposition while the dialog is visible.
+  val modelConfigs =
+    remember(model.name) {
+      val configs = model.configs.toMutableList()
+      if (!task.allowCapability(ModelCapability.LLM_THINKING, model)) {
+        configs.removeIf { it.key == ConfigKeys.ENABLE_THINKING }
+      }
+      var supportsSpeculativeDecoding = false
+      // Check if the model file supports speculative decoding.
+      try {
+        com.google.ai.edge.litertlm.Capabilities(model.getPath(context)).use {
+          supportsSpeculativeDecoding = it.hasSpeculativeDecodingSupport()
+        }
+      } catch (e: Exception) {
+        // Ignore exceptions and assume not supported.
+      }
+      if (
+        !supportsSpeculativeDecoding ||
+          !task.allowCapability(ModelCapability.SPECULATIVE_DECODING, model)
+      ) {
+        configs.removeIf { it.key == ConfigKeys.ENABLE_SPECULATIVE_DECODING }
+      }
+      configs
     }
-  } catch (e: Exception) {
-    // Ignore exceptions and assume not supported.
-  }
-  if (
-    !supportsSpeculativeDecoding ||
-      !task.allowCapability(ModelCapability.SPECULATIVE_DECODING, model)
-  ) {
-    modelConfigs.removeIf { it.key == ConfigKeys.ENABLE_SPECULATIVE_DECODING }
-  }
 
   ConfigDialog(
     title = stringResource(R.string.config_dialog_title),

@@ -140,6 +140,8 @@ object BuiltInTaskId {
   const val LLM_ASK_AUDIO = "llm_ask_audio"
   const val LLM_MOBILE_ACTIONS = "llm_mobile_actions"
   const val MP_SCRAPBOOK = "mp_scrapbook"
+  // Legacy id: Agent Skills is merged into the AI Chat task (LLM_CHAT). Kept for stored data
+  // (chat history, system prompts) written by older versions.
   const val LLM_AGENT_CHAT = "llm_agent_chat"
 }
 

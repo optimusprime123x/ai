@@ -17,6 +17,7 @@
 * Simplify the home showcase to a single, larger AI Chat card with an updated description.
 * Remove Qwen2.5 from the default model list, warn on app start when the device has less than 4GB of RAM (pointing to Mobile Actions), and list Mobile Actions first among the other use cases.
 * Switch the Mobile Actions model to an ungated HuggingFace repo so it does not need auth.
+* Merge Agent Skills into AI Chat: one chat with skills, MCP tools, thinking, multimodal input, and the agent system prompt.
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 
