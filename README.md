@@ -22,6 +22,7 @@
 * Move the model config button next to the back arrow, and add a "+" new-chat button in the top bar (moved out of the chat history sheet).
 * Add device actions as built-in skills (open apps, play music, flashlight, volume, settings panels), tighten the AI Chat Complete prompt, and make tool/skill mix-ups self-correcting for small models; bump to version 1.5.0.
 * Remove the never-functional Firebase Analytics/FCM stack (drops the accounts/push permissions and shrinks the APK), show the remaining-time estimate during model downloads, and drop the stale "history does not persist" notice.
+* Fix the model list loading forever with no retry when the allowlist fetch fails, add the multimodal Qwen3.5-0.8B model (recommended for 4-6GB devices), and align the Gemma memory requirements with the recommendation tiers (E2B needs 6GB, E4B needs 8GB); bump to version 1.6.0.
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 
