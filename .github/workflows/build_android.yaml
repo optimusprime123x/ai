@@ -32,12 +32,18 @@
         - name: Install Android SDK Platform 37
           run: echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-37.0"
         - name: Build
-          run: ./gradlew assembleRelease
-        - name: Upload release APK
+          # PR builds produce a single universal APK; main builds also produce per-ABI APKs.
+          run: |
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              ./gradlew assembleRelease
+            else
+              ./gradlew assembleRelease -PabiSplits
+            fi
+        - name: Upload release APKs
           uses: actions/upload-artifact@v4
           with:
             name: app-release
-            path: Android/src/app/build/outputs/apk/release/app-release.apk
+            path: Android/src/app/build/outputs/apk/release/*.apk
             if-no-files-found: error
         - name: Create GitHub release
           if: github.event_name != 'pull_request'
@@ -45,11 +51,21 @@
             GH_TOKEN: ${{ github.token }}
           run: |
             VERSION=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)
-            APK_NAME="aiplayground-v$VERSION.apk"
-            cp app/build/outputs/apk/release/app-release.apk "$APK_NAME"
-            gh release create "v$VERSION" "$APK_NAME" \
+            mkdir -p release-assets
+            for apk in app/build/outputs/apk/release/*.apk; do
+              base=$(basename "$apk" .apk)   # e.g. app-universal-release, app-arm64-v8a-release
+              suffix=${base#app-}
+              suffix=${suffix%-release}
+              # The universal APK keeps the plain name so it stays the default download.
+              if [ -z "$suffix" ] || [ "$suffix" = "release" ] || [ "$suffix" = "universal" ]; then
+                cp "$apk" "release-assets/aiplayground-v$VERSION.apk"
+              else
+                cp "$apk" "release-assets/aiplayground-v$VERSION-$suffix.apk"
+              fi
+            done
+            gh release create "v$VERSION" release-assets/*.apk \
               --title "AI Playground v$VERSION" \
               --notes "Automated release build of version $VERSION." \
-              || gh release upload "v$VERSION" "$APK_NAME" --clobber
+              || gh release upload "v$VERSION" release-assets/*.apk --clobber
   
   
