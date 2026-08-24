@@ -230,7 +230,7 @@ fun AgentChatScreen(
 
   LlmChatScreen(
     modelManagerViewModel = modelManagerViewModel,
-    taskId = BuiltInTaskId.LLM_AGENT_CHAT,
+    taskId = task.id,
     navigateUp = navigateUp,
     viewModel = viewModel,
     skillCount = skillCount,

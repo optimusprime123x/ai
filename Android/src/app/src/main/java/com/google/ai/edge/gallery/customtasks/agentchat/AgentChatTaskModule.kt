@@ -17,6 +17,8 @@
 package com.google.ai.edge.gallery.customtasks.agentchat
 
 import android.content.Context
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Forum
 import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
@@ -121,7 +123,7 @@ const val DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY =
 
 val DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY_TRIMMED = DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY.trimIndent()
 
-class AgentChatTask
+open class AgentChatTask
 @Inject
 constructor(
   @ApplicationContext private val context: Context,
@@ -217,6 +219,41 @@ constructor(
   }
 }
 
+/**
+ * The merged chat experience launched from the home screen's highlighted AI Chat tile: the regular
+ * chat features (thinking, editable system prompt, image/audio input) combined with agent skills
+ * and MCP tools. The classic AI Chat and Agent Skills tasks remain available in the task list.
+ */
+class MergedChatTask
+@Inject
+constructor(
+  @ApplicationContext private val context: Context,
+  skillsProvider: SkillsProvider,
+  agentTools: AgentTools,
+  @AgentChatExecutor executor: AgentRuntimeExecutor,
+) : AgentChatTask(context, skillsProvider, agentTools, executor) {
+  override val task: Task by lazy {
+    Task(
+      id = BuiltInTaskId.LLM_CHAT_MERGED,
+      label = context.getString(R.string.task_label_ai_chat),
+      category = Category.LLM,
+      icon = Icons.Outlined.Forum,
+      models = mutableListOf(),
+      description = context.getString(R.string.task_desc_ai_chat),
+      shortDescription = context.getString(R.string.task_short_desc_ai_chat),
+      docUrl = "https://github.com/google-ai-edge/LiteRT-LM/blob/main/kotlin/README.md",
+      sourceCodeUrl =
+        "https://github.com/google-ai-edge/gallery/blob/main/Android/src/app/src/main/java/com/google/ai/edge/gallery/customtasks/agentchat/",
+      textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
+      defaultSystemPrompt = DEFAULT_SYSTEM_PROMPT_TRIMMED,
+      hideFromTaskList = true,
+      // Hidden tasks are skipped when task-list indices are assigned, but the index drives the
+      // icon shape and colors; 3 matches the classic AI Chat tile.
+      index = 3,
+    )
+  }
+}
+
 @Module
 @InstallIn(SingletonComponent::class)
 internal object AgentChatTaskModule {
@@ -251,6 +288,17 @@ internal object AgentChatTaskModule {
     @AgentChatExecutor executor: AgentRuntimeExecutor,
   ): CustomTask {
     return AgentChatTask(context, skillManager, agentTools, executor)
+  }
+
+  @Provides
+  @IntoSet
+  fun provideMergedChatTask(
+    @ApplicationContext context: Context,
+    skillManager: SkillManager,
+    agentTools: AgentTools,
+    @AgentChatExecutor executor: AgentRuntimeExecutor,
+  ): CustomTask {
+    return MergedChatTask(context, skillManager, agentTools, executor)
   }
 
   @Provides

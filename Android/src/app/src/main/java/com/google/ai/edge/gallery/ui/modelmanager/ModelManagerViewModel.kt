@@ -701,6 +701,7 @@ constructor(
         BuiltInTaskId.LLM_PROMPT_LAB,
         BuiltInTaskId.LLM_MOBILE_ACTIONS,
         BuiltInTaskId.LLM_AGENT_CHAT,
+        BuiltInTaskId.LLM_CHAT_MERGED,
       )
     for (task in getTasksByIds(ids = setOfTasks)) {
       // Remove duplicated imported model if existed.
@@ -1045,6 +1046,14 @@ constructor(
             val task = curTasks.find { it.id == taskType }
             task?.models?.add(model)
           }
+          // The merged chat task (home screen tile) mirrors the classic AI Chat's models, so
+          // allowlists don't need a separate llm_chat_merged entry.
+          if (
+            allowedModel.taskTypes.contains(BuiltInTaskId.LLM_CHAT) &&
+              !allowedModel.taskTypes.contains(BuiltInTaskId.LLM_CHAT_MERGED)
+          ) {
+            curTasks.find { it.id == BuiltInTaskId.LLM_CHAT_MERGED }?.models?.add(model)
+          }
         }
 
         // Find models from allowlist if a task's `modelNames` field is not empty.
@@ -1194,6 +1203,7 @@ constructor(
       tasks.get(key = BuiltInTaskId.LLM_CHAT)?.models?.add(model)
       tasks.get(key = BuiltInTaskId.LLM_PROMPT_LAB)?.models?.add(model)
       tasks.get(key = BuiltInTaskId.LLM_AGENT_CHAT)?.models?.add(model)
+      tasks.get(key = BuiltInTaskId.LLM_CHAT_MERGED)?.models?.add(model)
       if (model.llmSupportImage) {
         tasks.get(key = BuiltInTaskId.LLM_ASK_IMAGE)?.models?.add(model)
       }
@@ -1267,6 +1277,7 @@ constructor(
       capabilityToTaskTypes[ModelCapability.LLM_THINKING] =
         listOf(
           BuiltInTaskId.LLM_CHAT,
+          BuiltInTaskId.LLM_CHAT_MERGED,
           BuiltInTaskId.LLM_ASK_IMAGE,
           BuiltInTaskId.LLM_ASK_AUDIO,
         )
@@ -1276,6 +1287,7 @@ constructor(
       capabilityToTaskTypes[ModelCapability.SPECULATIVE_DECODING] =
         listOf(
           BuiltInTaskId.LLM_CHAT,
+          BuiltInTaskId.LLM_CHAT_MERGED,
           BuiltInTaskId.LLM_ASK_IMAGE,
           BuiltInTaskId.LLM_ASK_AUDIO,
           BuiltInTaskId.LLM_PROMPT_LAB,
@@ -1330,7 +1342,7 @@ constructor(
   }
 
   private fun groupTasksByCategory(): Map<String, List<Task>> {
-    val tasks = getActiveCustomTasks().map { it.task }
+    val tasks = getActiveCustomTasks().map { it.task }.filter { !it.hideFromTaskList }
 
     val categoryMap: Map<String, CategoryInfo> =
       tasks.associateBy { it.category.id }.mapValues { it.value.category }

@@ -112,6 +112,12 @@ data class Task(
   /** The default system prompt for this task. */
   val defaultSystemPrompt: String = "",
 
+  /**
+   * Whether to hide this task from the home screen task list (e.g. tasks only reachable from the
+   * highlighted showcase tile).
+   */
+  val hideFromTaskList: Boolean = false,
+
   // The following fields are only used for built-in tasks. Can ignore if you are creating your own
   // custom tasks.
   //
@@ -141,6 +147,9 @@ object BuiltInTaskId {
   const val LLM_MOBILE_ACTIONS = "llm_mobile_actions"
   const val MP_SCRAPBOOK = "mp_scrapbook"
   const val LLM_AGENT_CHAT = "llm_agent_chat"
+  // The merged chat experience (regular AI chat + agent skills + MCP tools) launched from the
+  // home screen's highlighted tile.
+  const val LLM_CHAT_MERGED = "llm_chat_merged"
 }
 
 private val allLegacyTaskIds: MutableSet<String> =

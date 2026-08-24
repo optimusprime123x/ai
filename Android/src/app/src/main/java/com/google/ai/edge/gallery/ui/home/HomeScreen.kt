@@ -929,7 +929,7 @@ private fun TaskList(
           translationY = (CONTENT_COMPOSABLES_OFFSET_Y.dp * (1 - progress)).toPx()
         },
     ) {
-      val chatTask = modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_CHAT)!!
+      val chatTask = modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_CHAT_MERGED)!!
       TaskCard(
         task = chatTask,
         index = 0,
