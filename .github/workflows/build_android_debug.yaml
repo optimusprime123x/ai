@@ -22,6 +22,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - name: Set up Gradle with caching
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          # Also write the cache from feature branches, not just the default branch.
+          cache-read-only: false
       - name: Install Android SDK Platform 37
         run: echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-37.0"
       - name: Build
