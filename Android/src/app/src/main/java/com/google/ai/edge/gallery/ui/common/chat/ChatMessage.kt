@@ -114,6 +114,8 @@ open class ChatMessageText(
   override val side: ChatSide,
   // Negative numbers will hide the latency display.
   override val latencyMs: Float = 0f,
+  // Average generation speed of the response. Non-positive numbers will hide the display.
+  val tokensPerSecond: Float = -1f,
   val isMarkdown: Boolean = true,
 
   // Benchmark result for LLM response.
@@ -135,6 +137,7 @@ open class ChatMessageText(
         content = content,
         side = side,
         latencyMs = latencyMs,
+        tokensPerSecond = tokensPerSecond,
         accelerator = accelerator,
         isMarkdown = isMarkdown,
         llmBenchmarkResult = llmBenchmarkResult,

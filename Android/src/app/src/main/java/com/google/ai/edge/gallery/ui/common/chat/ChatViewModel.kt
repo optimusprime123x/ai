@@ -18,12 +18,14 @@ package com.google.ai.edge.gallery.ui.common.chat
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.SystemClock
 import android.util.Log
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.ai.edge.gallery.agent.AgentRuntimeExecutor
 import com.google.ai.edge.gallery.agent.sessions.LlmSessionManager
+import com.google.ai.edge.gallery.common.GenerationSpeedTracker
 import com.google.ai.edge.gallery.common.processLlmResponse
 import com.google.ai.edge.gallery.data.ChatSessionRepository
 import com.google.ai.edge.gallery.data.ConfigKeys
@@ -64,6 +66,9 @@ data class ChatUiState(
   /** A map of model names to the currently streaming chat message. */
   val streamingMessagesByModel: Map<String, ChatMessage> = mapOf(),
 
+  /** A map of model names to the live generation speed (in tokens per second). */
+  val generationSpeedByModel: Map<String, Float> = mapOf(),
+
 )
 
 /**
@@ -95,6 +100,9 @@ abstract class ChatViewModel(
 
   private val _uiState = MutableStateFlow(createUiState())
   val uiState = _uiState.asStateFlow()
+
+  // Live generation speed trackers, indexed by model name.
+  private val generationSpeedTrackers = mutableMapOf<String, GenerationSpeedTracker>()
 
   val historySessions: StateFlow<List<ChatSessionProto>> =
     chatSessionRepository
@@ -205,6 +213,7 @@ abstract class ChatViewModel(
     model: Model,
     partialContent: String,
     latencyMs: Float,
+    tokensPerSecond: Float = -1f,
   ) {
     val newMessagesByModel = _uiState.value.messagesByModel.toMutableMap()
     val newMessages = newMessagesByModel[model.name]?.toMutableList() ?: mutableListOf()
@@ -217,6 +226,8 @@ abstract class ChatViewModel(
             content = newContent,
             side = lastMessage.side,
             latencyMs = latencyMs,
+            tokensPerSecond =
+              if (tokensPerSecond > 0f) tokensPerSecond else lastMessage.tokensPerSecond,
             accelerator = lastMessage.accelerator,
             hideSenderLabel = lastMessage.hideSenderLabel,
           )
@@ -273,6 +284,22 @@ abstract class ChatViewModel(
     val newStreamingMessagesByModel = _uiState.value.streamingMessagesByModel.toMutableMap()
     newStreamingMessagesByModel[model.name] = message
     _uiState.update { it.copy(streamingMessagesByModel = newStreamingMessagesByModel) }
+  }
+
+  /** Resets the live generation speed tracking for the given model. */
+  fun resetGenerationSpeed(model: Model) {
+    generationSpeedTrackers.remove(model.name)
+    _uiState.update { it.copy(generationSpeedByModel = it.generationSpeedByModel - model.name) }
+  }
+
+  /** Records a streamed token for the given model and updates its live generation speed. */
+  fun recordGenerationToken(model: Model) {
+    val tracker = generationSpeedTrackers.getOrPut(model.name) { GenerationSpeedTracker() }
+    tracker.recordToken(SystemClock.uptimeMillis())?.let { tokensPerSecond ->
+      _uiState.update {
+        it.copy(generationSpeedByModel = it.generationSpeedByModel + (model.name to tokensPerSecond))
+      }
+    }
   }
 
   fun updateCollapsableProgressPanelMessage(
@@ -452,6 +479,7 @@ abstract class ChatViewModel(
               .setContent(msg.content)
               .setSide(mapChatSide(msg.side))
               .setLatencyMs(msg.latencyMs)
+              .setTokensPerSecond(msg.tokensPerSecond)
               .setAccelerator(msg.accelerator)
               .setHideSenderLabel(msg.hideSenderLabel)
               .setIsMarkdown(msg.isMarkdown)

@@ -235,8 +235,8 @@ data class Model(
    * "External Files Directory", which is: /storage/emulated/0/Android/data/<app_id>/files/.
    *
    * The <app_id> depends on how the app was built:
-   * - `com.google.aiedge.gallery` for builds from the GitHub source.
-   * - `com.google.ai.edge.gallery` for other builds (Play store, internal, etc).
+   * - `dev.optimus.aiplayground` for builds from this fork's source.
+   * - `com.google.ai.edge.gallery` for official builds (Play store, internal, etc).
    *
    * For example, if this field is set to "my_model/local_dir/", then the location you should push
    * files to is (assuming non-github builds):

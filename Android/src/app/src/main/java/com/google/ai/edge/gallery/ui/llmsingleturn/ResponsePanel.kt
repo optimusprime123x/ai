@@ -67,6 +67,7 @@ import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.Task
 import com.google.ai.edge.gallery.ui.common.BufferedFadingMarkdownText
 import com.google.ai.edge.gallery.ui.common.ScrollToBottomButton
+import com.google.ai.edge.gallery.ui.common.chat.GenerationSpeedIndicator
 import com.google.ai.edge.gallery.ui.common.chat.MessageBodyLoading
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import kotlinx.coroutines.delay
@@ -184,6 +185,15 @@ fun ResponsePanel(
                     },
                 )
               }
+              // Generation speed: live while streaming, and the final average once the
+              // response completes (cleared when a new generation starts).
+              uiState.generationSpeedByModel[curPageModel.name]?.let { tokensPerSecond ->
+                GenerationSpeedIndicator(
+                  tokensPerSecond = tokensPerSecond,
+                  modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 12.dp),
+                )
+              }
+
               // Copy button.
               IconButton(
                 onClick = {

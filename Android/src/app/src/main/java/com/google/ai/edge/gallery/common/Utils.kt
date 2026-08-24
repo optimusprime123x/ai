@@ -71,6 +71,20 @@ fun processLlmResponse(response: String): String {
   return response.replace("\\n", "\n")
 }
 
+/**
+ * Trims a model name for display in compact labels.
+ *
+ * Names longer than [maxLength] are cut to the first [maxLength] characters plus an ellipsis, with
+ * any trailing non-alphanumeric characters (e.g. "-" or "_") dropped so the trimmed name always
+ * ends with an alphanumeric character, e.g. "gemma-4-1b-it-int4" -> "gemma-4...".
+ */
+fun trimModelName(name: String, maxLength: Int = 8): String {
+  if (name.length <= maxLength) {
+    return name
+  }
+  return name.take(maxLength).trimEnd { !it.isLetterOrDigit() } + "..."
+}
+
 inline fun <reified T> getJsonResponse(url: String): JsonObjAndTextContent<T>? {
   try {
     val connection = URL(url).openConnection() as HttpURLConnection

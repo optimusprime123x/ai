@@ -16,9 +16,11 @@
 
 package com.google.ai.edge.gallery.ui.llmsingleturn
 
+import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.ai.edge.gallery.common.GenerationSpeedTracker
 import com.google.ai.edge.gallery.common.processLlmResponse
 import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.Task
@@ -46,6 +48,9 @@ data class LlmSingleTurnUiState(
 
   // model -> <template label -> response>
   val responsesByModel: Map<String, Map<String, String>>,
+
+  /** A map of model names to the live generation speed (in tokens per second). */
+  val generationSpeedByModel: Map<String, Float> = mapOf(),
 
   /** Selected prompt template type. */
   val selectedPromptTemplateType: PromptTemplateType = PromptTemplateType.entries[0],
@@ -93,6 +98,9 @@ class LlmSingleTurnViewModel @Inject constructor() : ViewModel() {
       // Run inference.
       var firstRun = true
       var response = ""
+      // Live generation speed tracking. Each stream callback corresponds to one decode step.
+      clearGenerationSpeed(model = model)
+      val generationSpeedTracker = GenerationSpeedTracker()
       model.runtimeHelper.runInference(
         model = model,
         input = input,
@@ -100,6 +108,12 @@ class LlmSingleTurnViewModel @Inject constructor() : ViewModel() {
           if (firstRun) {
             setPreparing(false)
             firstRun = false
+          }
+
+          if (partialResult.isNotEmpty() || !partialThinkingResult.isNullOrEmpty()) {
+            generationSpeedTracker.recordToken(SystemClock.uptimeMillis())?.let {
+              updateGenerationSpeed(model = model, tokensPerSecond = it)
+            }
           }
 
           // Incrementally update the streamed partial results.
@@ -146,6 +160,23 @@ class LlmSingleTurnViewModel @Inject constructor() : ViewModel() {
 
   fun setPreparing(preparing: Boolean) {
     _uiState.update { _uiState.value.copy(preparing = preparing) }
+  }
+
+  /** Clears the live generation speed for the given model. */
+  fun clearGenerationSpeed(model: Model) {
+    _uiState.update { currentState ->
+      currentState.copy(generationSpeedByModel = currentState.generationSpeedByModel - model.name)
+    }
+  }
+
+  /** Updates the live generation speed (in tokens per second) for the given model. */
+  fun updateGenerationSpeed(model: Model, tokensPerSecond: Float) {
+    _uiState.update { currentState ->
+      currentState.copy(
+        generationSpeedByModel =
+          currentState.generationSpeedByModel + (model.name to tokensPerSecond)
+      )
+    }
   }
 
   fun updateResponse(model: Model, promptTemplateType: PromptTemplateType, response: String) {

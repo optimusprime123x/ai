@@ -149,6 +149,7 @@ open class LlmChatViewModelBase(
     viewModelScope.launch(Dispatchers.Default) {
       setInProgress(true)
       setPreparing(true)
+      resetGenerationSpeed(model = model)
 
       // Loading.
       addMessage(model = model, message = ChatMessageLoading(accelerator = accelerator))
@@ -204,6 +205,12 @@ open class LlmChatViewModelBase(
         when (event) {
           is AgentEvent.LoopInitiated -> {}
           is AgentEvent.StreamToken -> {
+            // Each stream event corresponds to one decode step, so use it to track the live
+            // generation speed.
+            if (event.token.isNotEmpty() || !event.thinking.isNullOrEmpty()) {
+              recordGenerationToken(model = model)
+            }
+
             val lastMessage = getLastMessage(model = model)
             val wasLoading = lastMessage?.type == ChatMessageType.LOADING
             // Remove the last message if it is a "loading" message.
@@ -281,6 +288,13 @@ open class LlmChatViewModelBase(
                   model = model,
                   partialContent = event.token,
                   latencyMs = latencyMs.toFloat(),
+                  // Stamp the final average generation speed on the message when it completes.
+                  tokensPerSecond =
+                    if (event.done) {
+                      uiState.value.generationSpeedByModel[model.name] ?: -1f
+                    } else {
+                      -1f
+                    },
                 )
               }
             }

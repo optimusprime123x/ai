@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.ai.edge.gallery.R
+import com.google.ai.edge.gallery.ui.icon.Stars_2
 import com.google.ai.edge.gallery.ui.theme.bodySmallNarrow
 
 data class MessageLayoutConfig(
@@ -71,6 +73,20 @@ fun MessageSender(message: ChatMessage, agentName: String = "", imageHistoryCurI
     horizontalArrangement = horizontalArrangement,
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
+      // AI sparkle icon shown to the left of the agent label.
+      if (
+        message.side == ChatSide.AGENT &&
+          message !is ChatMessageBenchmarkResult &&
+          message !is ChatMessageBenchmarkLlmResult
+      ) {
+        Icon(
+          imageVector = Stars_2,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.primary,
+          modifier = Modifier.size(16.dp),
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+      }
       // Sender label.
       Text(userLabel, style = MaterialTheme.typography.titleSmall)
 

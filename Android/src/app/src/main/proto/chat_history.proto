@@ -52,6 +52,8 @@ message ChatMessageProto {
   repeated string image_file_paths = 9;
   // A list of audio recordings associated with this message.
   repeated AudioMessageProto audio_clips = 10;
+  // Average generation speed (in tokens per second) for the model response.
+  float tokens_per_second = 11;
 }
 
 // Represents an audio recording associated with a chat session message.
