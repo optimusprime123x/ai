@@ -203,7 +203,7 @@
       "modelFile": "mobile-actions_q8_ekv1024.litertlm",
       "description": "Fine-tuned Function Gemma 270M model for Mobile Actions.",
       "sizeInBytes": 284426240,
-      "minDeviceMemoryInGb": 6,
+      "minDeviceMemoryInGb": 2,
       "commitHash": "5683618019f1025f4dd567d26f58dc0ebb6244f2",
       "defaultConfig": {
         "topK": 64,
