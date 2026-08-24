@@ -24,8 +24,8 @@
 * Fix the model list loading forever with no retry when the allowlist fetch fails, add the multimodal Qwen3.5-0.8B model (recommended for 4-6GB devices), and align the Gemma memory requirements with the recommendation tiers (E2B needs 6GB, E4B needs 8GB); bump to version 1.6.0.
 * Make multi-GB downloads survivable: resume instead of restarting after a failure, retry transient network errors with backoff, wait for connectivity, and verify the downloaded size (plus guard against servers that ignore range requests).
 * Serve models more robustly: fall back from GPU to CPU when engine init fails, restore chat history after an error re-initializes the session, bound the allowlist fetch with timeouts, fix the max-tokens slider on small-context models, and stop a failed benchmark from wedging the screen.
-* More device actions (alarms, timers, share, open website, web search, music playback keys), the current date/time in the agent prompt (no more date-math tool chains), an email intent that actually opens email apps, vendored JS libraries so the QR code and mood tracker skills work offline, and properly documented tool parameters for every skill.
-* Upgrade the LiteRT-LM runtime from 0.11.0 to 0.16.1 (0.12.0 fixed a GPU bug that halved prefill speed), remove an unused MediaPipe library and unused library translations from the APK (arm64 APK 53MB → 39MB, universal 118MB → 66MB), and stop publishing the armeabi-v7a APK that never had a 32-bit inference library; bump to version 1.7.0.
+* More device actions (alarms, timers, share, open website, web search, music playback keys), the current date/time in the agent prompt (no more date-math tool chains), email intent fix, vendored JS libraries so the QR code and mood tracker skills work offline, and properly documented tool parameters for every skill.
+* Upgrade the LiteRT-LM runtime from 0.11.0 to 0.16.1, shrink apk size more
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 
