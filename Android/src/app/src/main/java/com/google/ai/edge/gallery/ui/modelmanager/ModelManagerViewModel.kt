@@ -171,12 +171,12 @@ data class ModelManagerUiState(
 
 private val PREDEFINED_LLM_TASK_ORDER =
   listOf(
+    BuiltInTaskId.LLM_MOBILE_ACTIONS,
     BuiltInTaskId.LLM_ASK_IMAGE,
     BuiltInTaskId.LLM_ASK_AUDIO,
     BuiltInTaskId.LLM_CHAT,
     BuiltInTaskId.LLM_AGENT_CHAT,
     BuiltInTaskId.LLM_PROMPT_LAB,
-    BuiltInTaskId.LLM_MOBILE_ACTIONS,
     BuiltInTaskId.MP_SCRAPBOOK,
   )
 

@@ -20,6 +20,7 @@ package com.google.ai.edge.gallery.ui.home
 // import com.google.ai.edge.gallery.ui.theme.GalleryTheme
 // import com.google.ai.edge.gallery.ui.preview.PreviewModelManagerViewModel
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -126,9 +127,11 @@ import com.google.ai.edge.gallery.ui.common.RevealingText
 import com.google.ai.edge.gallery.ui.common.SwipingText
 import com.google.ai.edge.gallery.ui.common.TaskIcon
 import com.google.ai.edge.gallery.ui.common.buildTrackableUrlAnnotatedString
+import com.google.ai.edge.gallery.ui.common.getDeviceMemInGb
 import com.google.ai.edge.gallery.ui.common.rememberDelayedAnimationProgress
 import com.google.ai.edge.gallery.ui.common.tos.AppTosDialog
 import com.google.ai.edge.gallery.ui.common.tos.TosViewModel
+import java.util.Locale
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import com.google.ai.edge.gallery.ui.theme.customColors
 import com.google.ai.edge.gallery.ui.theme.homePageTitleStyle
@@ -146,6 +149,9 @@ private const val TITLE_SECOND_LINE_ANIMATION_START =
   ANIMATION_INIT_DELAY + (TITLE_FIRST_LINE_ANIMATION_DURATION * 0.5).toInt()
 private const val TASK_LIST_ANIMATION_START = TITLE_SECOND_LINE_ANIMATION_START + 110
 private const val TASK_CARD_ANIMATION_DELAY_OFFSET = 100
+// Devices with less than this much RAM (in GB) get a warning dialog on app start.
+private const val LOW_RAM_WARNING_THRESHOLD_GB = 4f
+
 private const val TASK_CARD_ANIMATION_DURATION = 600
 private const val CONTENT_COMPOSABLES_ANIMATION_DURATION = 1200
 private const val CONTENT_COMPOSABLES_OFFSET_Y = 16
@@ -175,6 +181,12 @@ fun HomeScreen(
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val isDevBuild = context.packageName.endsWith(".dev")
+
+  // Low RAM warning shown on app start for devices unlikely to run the default models.
+  val deviceMemInGb = remember { getDeviceMemInGb(context) }
+  var showLowRamWarning by remember {
+    mutableStateOf(deviceMemInGb != null && deviceMemInGb < LOW_RAM_WARNING_THRESHOLD_GB)
+  }
 
   var tasks = uiState.tasks
 
@@ -512,6 +524,45 @@ fun HomeScreen(
         showTosDialog = false
         tosViewModel.acceptTos()
       }
+    )
+  }
+
+  // Low RAM warning (shown after the TOS dialog is out of the way).
+  if (showLowRamWarning && !showTosDialog) {
+    AlertDialog(
+      onDismissRequest = { showLowRamWarning = false },
+      title = { Text(stringResource(R.string.low_ram_warning_title)) },
+      text = {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+          Text(
+            stringResource(
+              R.string.low_ram_warning_description,
+              String.format(Locale.US, "%.1f", deviceMemInGb),
+            )
+          )
+          Text(
+            stringResource(R.string.low_ram_warning_try_mobile_actions),
+            color = MaterialTheme.colorScheme.primary,
+            modifier =
+              Modifier.clickable {
+                showLowRamWarning = false
+                modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_MOBILE_ACTIONS)?.let {
+                  navigateToTaskScreen(it)
+                }
+              },
+          )
+        }
+      },
+      confirmButton = {
+        TextButton(onClick = { showLowRamWarning = false }) {
+          Text(stringResource(R.string.low_ram_warning_continue))
+        }
+      },
+      dismissButton = {
+        TextButton(onClick = { (context as? Activity)?.finish() }) {
+          Text(stringResource(R.string.low_ram_warning_exit))
+        }
+      },
     )
   }
 

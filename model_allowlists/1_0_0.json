@@ -161,26 +161,6 @@
       }
     },
     {
-      "name": "Qwen2.5-1.5B-Instruct",
-      "modelId": "litert-community/Qwen2.5-1.5B-Instruct",
-      "modelFile": "Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm",
-      "description": "A variant of [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) ready for deployment on Android using [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM/blob/main/kotlin/README.md).",
-      "sizeInBytes": 1597931520,
-      "minDeviceMemoryInGb": 6,
-      "commitHash": "19edb84c69a0212f29a6ef17ba0d6f278b6a1614",
-      "defaultConfig": {
-        "topK": 20,
-        "topP": 0.8,
-        "temperature": 0.7,
-        "maxTokens": 4096,
-        "accelerators": "gpu,cpu"
-      },
-      "taskTypes": [
-        "llm_chat",
-        "llm_prompt_lab"
-      ]
-    },
-    {
       "name": "MobileActions-270M",
       "modelId": "litert-community/functiongemma-270m-ft-mobile-actions",
       "modelFile": "mobile_actions_q8_ekv1024.litertlm",
