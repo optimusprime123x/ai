@@ -1326,8 +1326,11 @@ constructor(
 
   /**
    * Restores previously saved config tweaks for the given model on top of its default config
-   * values. Only keys that are still present in the model's configs are applied, and numbers are
-   * coerced back to floats (JSON deserialization yields doubles).
+   * values. Only keys that are still present in the model's configs are applied, and each value is
+   * coerced to the config's current value type: JSON deserialization yields doubles for numbers,
+   * and a config's type can change between app/allowlist versions (e.g. "Max tokens" is a String
+   * label without maxContextLength but a Float slider with it). Values that can't be coerced are
+   * skipped so a stale save can never poison the config dialog.
    */
   private fun restoreSavedConfigValues(model: Model) {
     val savedValues = dataStoreRepository.readModelConfigValues(modelName = model.name) ?: return
@@ -1336,7 +1339,18 @@ constructor(
       if (!newConfigValues.containsKey(key)) {
         continue
       }
-      newConfigValues[key] = if (value is Double) value.toFloat() else value
+      val config = model.configs.find { it.key.label == key } ?: continue
+      val coerced: Any? =
+        when (config.valueType) {
+          ValueType.INT,
+          ValueType.FLOAT,
+          ValueType.DOUBLE -> (value as? Number)?.toFloat() ?: (value as? String)?.toFloatOrNull()
+          ValueType.STRING -> value as? String
+          ValueType.BOOLEAN -> value as? Boolean
+        }
+      if (coerced != null) {
+        newConfigValues[key] = coerced
+      }
     }
     model.configValues = newConfigValues
   }
