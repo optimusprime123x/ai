@@ -20,8 +20,13 @@
 * Give AI Chat Complete its own chat-first system prompt and empty state, keep the Agent Skills greedy TopK override out of it (and out of the saved defaults), and bump to version 1.4.0.
 * Move the model config button next to the back arrow, and add a "+" new-chat button in the top bar (moved out of the chat history sheet).
 * Add device actions as built-in skills (open apps, play music, flashlight, volume, settings panels), tighten the AI Chat Complete prompt, and make tool/skill mix-ups self-correcting for small models; bump to version 1.5.0.
-* Remove the Firebase Analytics/FCM stack (drops the accounts/push permissions and shrinks the APK), show the remaining-time estimate during model downloads
-  
+* Remove the Firebase Analytics/FCM stack (drops the accounts/push permissions and shrinks the APK), show the remaining-time estimate during model downloads, and drop the stale "history does not persist" notice.
+* Fix the model list loading forever with no retry when the allowlist fetch fails, add the multimodal Qwen3.5-0.8B model (recommended for 4-6GB devices), and align the Gemma memory requirements with the recommendation tiers (E2B needs 6GB, E4B needs 8GB); bump to version 1.6.0.
+* Make multi-GB downloads survivable: resume instead of restarting after a failure, retry transient network errors with backoff, wait for connectivity, and verify the downloaded size (plus guard against servers that ignore range requests).
+* Serve models more robustly: fall back from GPU to CPU when engine init fails, restore chat history after an error re-initializes the session, bound the allowlist fetch with timeouts, fix the max-tokens slider on small-context models, and stop a failed benchmark from wedging the screen.
+* More device actions (alarms, timers, share, open website, web search, music playback keys), the current date/time in the agent prompt (no more date-math tool chains), an email intent that actually opens email apps, vendored JS libraries so the QR code and mood tracker skills work offline, and properly documented tool parameters for every skill.
+* Upgrade the LiteRT-LM runtime from 0.11.0 to 0.16.1 (0.12.0 fixed a GPU bug that halved prefill speed), remove an unused MediaPipe library and unused library translations from the APK (arm64 APK 53MB → 39MB, universal 118MB → 66MB), and stop publishing the armeabi-v7a APK that never had a 32-bit inference library; bump to version 1.7.0.
+
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 
 AI Edge Gallery is the premier destination for running the world's most powerful open-source Large Language Models (LLMs) on your mobile device. Experience high-performance Generative AI directly on your hardware—fully offline, private, and lightning-fast.

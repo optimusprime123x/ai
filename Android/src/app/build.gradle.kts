@@ -34,8 +34,8 @@ android {
     applicationId = "dev.optimus.aiplayground"
     minSdk = 31
     targetSdk = 37
-    versionCode = 48
-    versionName = "1.6.0"
+    versionCode = 49
+    versionName = "1.7.0"
 
     // Needed for HuggingFace auth workflows.
     // Use the scheme of the "Redirect URLs" in HuggingFace app.
@@ -87,13 +87,19 @@ android {
     }
   }
 
+  // The app ships English-only strings; drop the AndroidX/Material/Play-services translations
+  // that would otherwise fill resources.arsc.
+  androidResources { localeFilters += listOf("en") }
+
   // Per-ABI release APKs plus a universal one. Enabled with -PabiSplits (used by the release
   // workflow when building from main); PR and local builds produce a single universal APK.
   splits {
     abi {
       isEnable = project.hasProperty("abiSplits")
       reset()
-      include("arm64-v8a", "armeabi-v7a", "x86_64")
+      // No armeabi-v7a: LiteRT-LM ships no 32-bit ARM native library, so a v7a APK could
+      // never run any model. 32-bit devices can still install the universal APK.
+      include("arm64-v8a", "x86_64")
       isUniversalApk = true
     }
   }
@@ -166,7 +172,6 @@ dependencies {
   implementation(libs.mcp.kotlin.sdk)
   implementation(libs.ktor.client.android)
   implementation(libs.ktor.client.core)
-  implementation(libs.tasks.vision)
 }
 
 protobuf {
