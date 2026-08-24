@@ -235,7 +235,7 @@ constructor(
   override val task: Task by lazy {
     Task(
       id = BuiltInTaskId.LLM_CHAT_MERGED,
-      label = context.getString(R.string.task_label_ai_chat),
+      label = context.getString(R.string.task_label_ai_chat_complete),
       category = Category.LLM,
       icon = Icons.Outlined.Forum,
       models = mutableListOf(),

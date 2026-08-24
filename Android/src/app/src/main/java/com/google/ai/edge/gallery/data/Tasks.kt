@@ -159,6 +159,9 @@ private val allLegacyTaskIds: MutableSet<String> =
     BuiltInTaskId.LLM_ASK_IMAGE,
     BuiltInTaskId.LLM_ASK_AUDIO,
     BuiltInTaskId.LLM_AGENT_CHAT,
+    // The merged chat task's MainScreen expects CustomTaskDataForBuiltinTask, which the nav graph
+    // only passes to tasks in this set — leaving it out crashes on entering the task.
+    BuiltInTaskId.LLM_CHAT_MERGED,
   )
 
 fun isLegacyTasks(id: String): Boolean {
