@@ -13,17 +13,12 @@
 * Remove the Tiny Garden mini-game entirely.
 * Add vision and uncensored badges to model lists, and add the SuperGemma4-E4B-abliterated model to the defaults.
 * Show the configuration dialog before model initialization, remember per-model config tweaks, and add a RAM-based recommended badge.
-* Bump to version 1.1.0, with a CI guard ensuring every app version ships with its model allowlist.
 * Simplify the home showcase to a single, larger AI Chat card with an updated description.
 * Remove Qwen2.5 from the default model list, warn on app start when the device has less than 4GB of RAM (pointing to Mobile Actions), and list Mobile Actions first among the other use cases.
 * Switch the Mobile Actions model to an ungated HuggingFace repo so it does not need auth.
-* The home screen's suggested AI Chat now launches a merged chat with skills, MCP tools, thinking, multimodal input, and the agent system prompt; the classic AI Chat and Agent Skills tasks remain available in the task list.
-* Shrink release APKs with R8, roughly halving their size.
-* Sign every build with a fixed keystore so newer builds install as updates instead of requiring a reinstall.
-* Fix a config-dialog crash when restoring saved settings from an older app version, and bump to version 1.2.0.
+* The home screen's suggested AI Chat now launches a merged chat with skills, MCP tools, thinking, multimodal input, and the agent system prompt; the classic AI Chat and Agent Skills tasks remain available in the task list. 
 * Name the home screen's merged chat tile "AI Chat Complete", fix the crash when opening it, and bump to version 1.3.0.
 * Give AI Chat Complete its own chat-first system prompt and empty state, keep the Agent Skills greedy TopK override out of it (and out of the saved defaults), and bump to version 1.4.0.
-* Fix the thinking section snapping back open on every streamed token, which made it impossible to collapse during long skill-assisted responses.
 * Move the model config button next to the back arrow, and add a "+" new-chat button in the top bar (moved out of the chat history sheet).
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
@@ -43,15 +38,11 @@ The latest version brings official support for the newly released Gemma 4 family
 <img width="480" alt="01" src="https://github.com/user-attachments/assets/a809ad78-aef4-4169-91ee-de7213cbb3bd" />
 <img width="480" alt="02" src="https://github.com/user-attachments/assets/1effd10d-f45a-4f7b-9435-f50f1bdd36b6" />
 <img width="480" alt="03" src="https://github.com/user-attachments/assets/e5089e41-2c18-4fbe-9011-ebe9e5a02044" />
-<img width="480" alt="04" src="https://github.com/user-attachments/assets/0f39d3ed-7403-4606-a7c6-b2c7e51ba6c1" />
-<img width="480" alt="05" src="https://github.com/user-attachments/assets/8c229e96-b598-4735-9f60-e96907e1d5d5" />
 <img width="480" alt="06" src="https://github.com/user-attachments/assets/ac9fb77b-81de-4197-9ed3-f6fe58290b3e" />
-<img width="480" alt="07" src="https://github.com/user-attachments/assets/bc86ba07-2eaf-49b1-980f-8a87a85c596f" />
-<img width="480" alt="08" src="https://github.com/user-attachments/assets/1ccf3c95-a195-4a38-ad53-4b9c7b8b3c50" />
 
 ## ✨ Core Features
 
-* * **AI Chat Complete (beta) **: A complete implementation of chat, ask image, transcribe audio, tool/skill usage with thinking mode if needed. 
+* **AI Chat Complete (beta)**: A complete implementation of chat, ask image, transcribe audio, tool/skill usage with thinking mode if needed. 
 
 * **Agent Skills**: Transform your LLM from a conversationalist into a proactive assistant. Use the Agent Skills tile to augment model capabilities with tools like Wikipedia for fact-grounding, interactive maps, and rich visual summary cards. You can even load modular skills from a URL or browse community contributions on GitHub Discussions.
 
