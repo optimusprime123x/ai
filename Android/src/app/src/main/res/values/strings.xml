@@ -731,6 +731,7 @@
 
   <!-- Task Labels & Descriptions -->
   <string name="task_label_ai_chat" translatable="false">AI Chat</string>
+  <string name="task_label_ai_chat_complete" translatable="false">AI Chat Complete</string>
   <string name="task_label_prompt_lab" translatable="false">Prompt Lab</string>
   <string name="task_label_ask_image" translatable="false">Ask Image</string>
   <string name="task_label_audio_scribe" translatable="false">Audio Scribe</string>
