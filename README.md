@@ -1,5 +1,9 @@
 # Edge AI Playground ✨
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/optimusprime123x/ai)](https://github.com/optimusprime123x/ai/releases)
+[![Build Android APK](https://github.com/optimusprime123x/ai/actions/workflows/build_android.yaml/badge.svg?branch=main)](https://github.com/optimusprime123x/ai/actions/workflows/build_android.yaml)
+
 ## Changes from google's version
 
 * Show live generation speed in t/s (with a speedometer icon) during all model generations.
@@ -13,9 +17,6 @@
 * Simplify the home showcase to a single, larger AI Chat card with an updated description.
 * Remove Qwen2.5 from the default model list, warn on app start when the device has less than 4GB of RAM (pointing to Mobile Actions), and list Mobile Actions first among the other use cases.
 * Switch the Mobile Actions model to an ungated HuggingFace repo so it does not need auth.
-
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/google-ai-edge/gallery)](https://github.com/google-ai-edge/gallery/releases)
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 
