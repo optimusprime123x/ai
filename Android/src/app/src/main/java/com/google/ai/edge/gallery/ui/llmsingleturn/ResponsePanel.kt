@@ -185,14 +185,13 @@ fun ResponsePanel(
                     },
                 )
               }
-              // Live generation speed.
-              if (inProgress) {
-                uiState.generationSpeedByModel[curPageModel.name]?.let { tokensPerSecond ->
-                  GenerationSpeedIndicator(
-                    tokensPerSecond = tokensPerSecond,
-                    modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 12.dp),
-                  )
-                }
+              // Generation speed: live while streaming, and the final average once the
+              // response completes (cleared when a new generation starts).
+              uiState.generationSpeedByModel[curPageModel.name]?.let { tokensPerSecond ->
+                GenerationSpeedIndicator(
+                  tokensPerSecond = tokensPerSecond,
+                  modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 12.dp),
+                )
               }
 
               // Copy button.

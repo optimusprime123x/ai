@@ -288,6 +288,13 @@ open class LlmChatViewModelBase(
                   model = model,
                   partialContent = event.token,
                   latencyMs = latencyMs.toFloat(),
+                  // Stamp the final average generation speed on the message when it completes.
+                  tokensPerSecond =
+                    if (event.done) {
+                      uiState.value.generationSpeedByModel[model.name] ?: -1f
+                    } else {
+                      -1f
+                    },
                 )
               }
             }

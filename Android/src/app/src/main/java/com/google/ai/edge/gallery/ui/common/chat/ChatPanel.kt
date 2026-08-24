@@ -103,6 +103,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.ai.edge.gallery.R
+import com.google.ai.edge.gallery.common.trimModelName
 import com.google.ai.edge.gallery.data.BuiltInTaskId
 import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.Task
@@ -421,7 +422,9 @@ fun ChatPanel(
               // Sender row.
               var agentName = stringResource(task.agentNameRes)
               if (message.accelerator.isNotEmpty()) {
-                agentName = "$agentName on ${message.accelerator}"
+                // Show the current model's name (trimmed) with the accelerator, e.g.
+                // "gemma-4...(GPU)".
+                agentName = "${trimModelName(selectedModel.name)}(${message.accelerator})"
               }
               if (!message.hideSenderLabel) {
                 MessageSender(
@@ -544,16 +547,23 @@ fun ChatPanel(
                       horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                       LatencyText(message = message)
-                      // Live generation speed for the message being streamed.
-                      if (
-                        uiState.inProgress &&
-                          index == messages.size - 1 &&
-                          (message.type == ChatMessageType.TEXT ||
-                            message.type == ChatMessageType.THINKING)
-                      ) {
-                        uiState.generationSpeedByModel[selectedModel.name]?.let {
-                          GenerationSpeedIndicator(tokensPerSecond = it)
+                      // Generation speed: the final average for completed messages, or the live
+                      // value for the message being streamed.
+                      val finalSpeed =
+                        (message as? ChatMessageText)?.tokensPerSecond?.takeIf { it > 0f }
+                      val liveSpeed =
+                        if (
+                          uiState.inProgress &&
+                            index == messages.size - 1 &&
+                            (message.type == ChatMessageType.TEXT ||
+                              message.type == ChatMessageType.THINKING)
+                        ) {
+                          uiState.generationSpeedByModel[selectedModel.name]
+                        } else {
+                          null
                         }
+                      (finalSpeed ?: liveSpeed)?.let {
+                        GenerationSpeedIndicator(tokensPerSecond = it)
                       }
                       if (message is ChatMessageText && !uiState.inProgress) {
                         IconButton(
