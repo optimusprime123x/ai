@@ -14,6 +14,7 @@
 * Rename the app to AI Playground, with the styled "Edge AI Playground" title on the home screen and top header.
 * Simplify the home showcase to a single, larger AI Chat card with an updated description.
 * Remove Qwen2.5 from the default model list, warn on app start when the device has less than 4GB of RAM (pointing to Mobile Actions), and list Mobile Actions first among the other use cases.
+* Switch the Mobile Actions model to an ungated HuggingFace repo so it downloads without a HuggingFace account.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/google-ai-edge/gallery)](https://github.com/google-ai-edge/gallery/releases)
