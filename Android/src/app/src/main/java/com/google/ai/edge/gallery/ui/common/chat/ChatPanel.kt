@@ -544,6 +544,17 @@ fun ChatPanel(
                       horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                       LatencyText(message = message)
+                      // Live generation speed for the message being streamed.
+                      if (
+                        uiState.inProgress &&
+                          index == messages.size - 1 &&
+                          (message.type == ChatMessageType.TEXT ||
+                            message.type == ChatMessageType.THINKING)
+                      ) {
+                        uiState.generationSpeedByModel[selectedModel.name]?.let {
+                          GenerationSpeedIndicator(tokensPerSecond = it)
+                        }
+                      }
                       if (message is ChatMessageText && !uiState.inProgress) {
                         IconButton(
                           onClick = { copyToClipboard(message.content) },

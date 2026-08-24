@@ -1,5 +1,9 @@
 # Google AI Edge Gallery ✨
 
+## Changes
+
+* Show live generation speed in t/s (with a speedometer icon) during all model generations.
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/google-ai-edge/gallery)](https://github.com/google-ai-edge/gallery/releases)
 
