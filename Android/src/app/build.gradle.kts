@@ -53,7 +53,11 @@ android {
 
   buildTypes {
     release {
-      isMinifyEnabled = false
+      // Shrink unused library code and resources. The app's own classes (and the inference
+      // runtimes) are kept unobfuscated via proguard-rules.pro to avoid breaking Gson/JNI
+      // reflection.
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("debug")
     }
