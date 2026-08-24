@@ -286,6 +286,9 @@ data class Model(
   /** Whether the LLM model supports mobile actions. */
   val llmSupportMobileActions: Boolean = false,
 
+  /** Whether the LLM model is uncensored (e.g. an abliterated variant with fewer refusals). */
+  val uncensored: Boolean = false,
+
   /** The capabilities of the model. */
   val capabilities: List<ModelCapability> = listOf(),
 

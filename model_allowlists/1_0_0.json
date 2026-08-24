@@ -117,6 +117,32 @@
       "updateInfo": "The updated model now leverages Gemma 4's built-in Multi Token Prediction (MTP) for faster decode on select workloads. You can enable or disable MTP using a new toggle in chat configuration."
     },
     {
+      "name": "SuperGemma4-E4B-abliterated",
+      "modelId": "typomonster/supergemma4-e4b-abliterated-litert-lm",
+      "modelFile": "supergemma4-e4b-abliterated.litertlm",
+      "description": "An unofficial abliterated version of the gemma4-e4b model with significantly lower refusals. Based on Gemma 4 E4B; supports vision input with up to 32K context length.",
+      "sizeInBytes": 3654467584,
+      "minDeviceMemoryInGb": 12,
+      "commitHash": "3cb37a0fe1688c84cdb9faaa273052d82b8ca68b",
+      "llmSupportImage": true,
+      "uncensored": true,
+      "defaultConfig": {
+        "topK": 64,
+        "topP": 0.95,
+        "temperature": 1.0,
+        "maxContextLength": 32000,
+        "maxTokens": 4000,
+        "accelerators": "gpu,cpu",
+        "visionAccelerator": "gpu"
+      },
+      "taskTypes": [
+        "llm_chat",
+        "llm_prompt_lab",
+        "llm_agent_chat",
+        "llm_ask_image"
+      ]
+    },
+    {
       "name": "Qwen2.5-1.5B-Instruct",
       "modelId": "litert-community/Qwen2.5-1.5B-Instruct",
       "modelFile": "Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm",

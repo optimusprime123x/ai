@@ -519,6 +519,10 @@
   <string name="cd_chat_panel" translatable="true" description="Content description for the main chat interface panel. [CHAR_LIMIT=90]">Chat panel</string>
   <!-- Content description spoken when the generation speed (speedometer) icon is focused. -->
   <string name="cd_generation_speed_icon" translatable="true" description="Content description for the speedometer icon shown next to the live generation speed in tokens per second. [CHAR_LIMIT=90]">Generation speed</string>
+  <!-- Label for the badge shown on models that support image (vision) input. -->
+  <string name="model_badge_vision" translatable="true" description="Label for the badge shown on models that support image (vision) input. [CHAR_LIMIT=20]">Vision</string>
+  <!-- Label for the badge shown on uncensored (abliterated) model variants. -->
+  <string name="model_badge_uncensored" translatable="true" description="Label for the badge shown on uncensored (abliterated) model variants. [CHAR_LIMIT=20]">Uncensored</string>
   <!-- Content description spoken when the "switch to keyboard" icon is focused. -->
   <string name="cd_switch_to_keyboard" translatable="true" description="Content description for the button to switch the input mode to keyboard text entry. [CHAR_LIMIT=30]">Switch to keyboard</string>
   <!-- Content description spoken when the "switch to voice" icon is focused. -->
