@@ -30,6 +30,7 @@ import com.google.ai.edge.gallery.agent.AiChatExecutor
 import com.google.ai.edge.gallery.agent.Attachment
 import com.google.ai.edge.gallery.agent.sessions.LlmSessionManager
 import com.google.ai.edge.gallery.common.SystemPromptHelper
+import com.google.ai.edge.gallery.data.BuiltInTaskId
 import com.google.ai.edge.gallery.data.ChatSessionRepository
 import com.google.ai.edge.gallery.data.ConfigKeys
 import com.google.ai.edge.gallery.data.Model
@@ -426,6 +427,48 @@ open class LlmChatViewModelBase(
             task = task,
             model = model,
             onDone = {
+              // Rebuild the conversation with the on-screen history so the model doesn't lose
+              // its memory of the chat. Agent-family tasks don't route errors through here
+              // (AgentChatScreen has its own error path) and initializeModelFn rebuilds their
+              // session config itself, so they are excluded defensively.
+              if (
+                currentTaskId != BuiltInTaskId.LLM_AGENT_CHAT &&
+                  currentTaskId != BuiltInTaskId.LLM_CHAT_MERGED
+              ) {
+                val textMessages =
+                  (uiState.value.messagesByModel[model.name] ?: emptyList())
+                    .filterIsInstance<ChatMessageText>()
+                // Drop the failed exchange: the partial model reply (if any tokens arrived) and
+                // the user prompt that triggered it. Keeping the prompt would make the user's
+                // next message a second consecutive user turn in the prompt template.
+                val history =
+                  textMessages
+                    .dropLastWhile { it.side == ChatSide.AGENT }
+                    .dropLastWhile { it.side == ChatSide.USER }
+                val initialMessages = history.mapNotNull { convertToLitertMessage(it) }
+                if (initialMessages.isNotEmpty()) {
+                  // Block the send button until the history replay finishes: sending while the
+                  // conversation is being swapped would run inference on a closing conversation.
+                  setIsResettingSession(true)
+                  viewModelScope.launch(Dispatchers.Default) {
+                    try {
+                      runtimeExecutor.resetSession(
+                        config =
+                          AgentRuntimeConfig(
+                            model = model,
+                            taskId = currentTaskId,
+                            supportImage = model.llmSupportImage,
+                            supportAudio = model.llmSupportAudio,
+                            systemInstruction = _uiSystemPrompt.value.ifEmpty { null },
+                            initialMessages = initialMessages,
+                          )
+                      )
+                    } finally {
+                      setIsResettingSession(false)
+                    }
+                  }
+                }
+              }
               // Add a warning message for re-initializing the session.
               addMessage(
                 model = model,

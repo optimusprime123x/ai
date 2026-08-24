@@ -89,6 +89,10 @@ inline fun <reified T> getJsonResponse(url: String): JsonObjAndTextContent<T>? {
   try {
     val connection = URL(url).openConnection() as HttpURLConnection
     connection.requestMethod = "GET"
+    // Bound the fetch so a captive portal or half-open connection can't hang the caller — the
+    // model allowlist fetch gates the whole home screen.
+    connection.connectTimeout = 5_000
+    connection.readTimeout = 10_000
     connection.connect()
 
     val responseCode = connection.responseCode

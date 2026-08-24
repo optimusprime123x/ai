@@ -121,22 +121,9 @@ object LlmChatModelHelper : LlmModelHelper {
     Log.d(TAG, "Preferred backend: $preferredBackend")
 
     val modelPath = model.getPath(context = context)
-    val engineConfig =
-      EngineConfig(
-        modelPath = modelPath,
-        backend = preferredBackend,
-        visionBackend = if (shouldEnableImage) visionBackend else null, // must be GPU for Gemma 3n
-        audioBackend = if (shouldEnableAudio) Backend.CPU() else null, // must be CPU for Gemma 3n
-        maxNumTokens = maxTokens,
-        cacheDir =
-          if (modelPath.startsWith("/data/local/tmp"))
-            context.getExternalFilesDir(null)?.absolutePath
-          else null,
-      )
 
     // Check if the model file supports speculative decoding.
     var supportsSpeculativeDecoding = false
-    // Check if the model file supports speculative decoding.
     try {
       com.google.ai.edge.litertlm.Capabilities(modelPath).use {
         supportsSpeculativeDecoding = it.hasSpeculativeDecodingSupport()
@@ -144,49 +131,108 @@ object LlmChatModelHelper : LlmModelHelper {
     } catch (e: Exception) {
       // Ignore exceptions and assume not supported.
     }
-    // Create an instance of LiteRT LM engine and conversation.
-    try {
-      var speculativeDecoding = false
-      // Check if the model supports speculative decoding for the given task type and if the
-      // speculative decoding is enabled in the settings.
-      if (
-        supportsSpeculativeDecoding &&
-          model.capabilityToTaskTypes[ModelCapability.SPECULATIVE_DECODING]?.contains(taskId) ==
-            true
-      ) {
-        speculativeDecoding =
-          model.getBooleanConfigValue(
-            key = ConfigKeys.ENABLE_SPECULATIVE_DECODING,
-            defaultValue = false,
-          )
-      }
+    // Check if the model supports speculative decoding for the given task type and if the
+    // speculative decoding is enabled in the settings.
+    var speculativeDecoding = false
+    if (
+      supportsSpeculativeDecoding &&
+        model.capabilityToTaskTypes[ModelCapability.SPECULATIVE_DECODING]?.contains(taskId) == true
+    ) {
+      speculativeDecoding =
+        model.getBooleanConfigValue(
+          key = ConfigKeys.ENABLE_SPECULATIVE_DECODING,
+          defaultValue = false,
+        )
+    }
+
+    // Creates the engine and conversation on the given backend, closing the engine if any step
+    // fails so a failed attempt can't leak a partially initialized multi-GB engine.
+    fun createInstance(backend: Backend, forceCpuVision: Boolean = false): LlmModelInstance {
+      val effectiveVisionBackend =
+        when {
+          !shouldEnableImage -> null
+          // On the CPU fallback the GPU has already proven unusable; keeping the vision
+          // encoder on GPU would just fail again after another multi-GB model load.
+          forceCpuVision && visionBackend is Backend.GPU -> Backend.CPU()
+          else -> visionBackend // must be GPU for Gemma 3n
+        }
+      val engineConfig =
+        EngineConfig(
+          modelPath = modelPath,
+          backend = backend,
+          visionBackend = effectiveVisionBackend,
+          audioBackend = if (shouldEnableAudio) Backend.CPU() else null, // must be CPU for Gemma 3n
+          maxNumTokens = maxTokens,
+          cacheDir =
+            if (modelPath.startsWith("/data/local/tmp"))
+              context.getExternalFilesDir(null)?.absolutePath
+            else null,
+        )
       ExperimentalFlags.enableSpeculativeDecoding = speculativeDecoding
       Log.d(TAG, "Speculative decoding enabled: $speculativeDecoding")
       val engine = Engine(engineConfig)
-      engine.initialize()
-      ExperimentalFlags.enableSpeculativeDecoding = false
-
-      ExperimentalFlags.enableConversationConstrainedDecoding =
-        enableConversationConstrainedDecoding
-      val conversation =
-        engine.createConversation(
-          ConversationConfig(
-            samplerConfig =
-              if (preferredBackend is Backend.NPU) {
-                null
-              } else {
-                SamplerConfig(
-                  topK = topK,
-                  topP = topP.toDouble(),
-                  temperature = temperature.toDouble(),
-                )
-              },
-            systemInstruction = systemInstruction,
-            tools = tools,
+      try {
+        engine.initialize()
+        // Speculative decoding only applies to engine creation; clear it before the
+        // conversation is created so conversations built here and in resetConversation see the
+        // same flag state.
+        ExperimentalFlags.enableSpeculativeDecoding = false
+        ExperimentalFlags.enableConversationConstrainedDecoding =
+          enableConversationConstrainedDecoding
+        val conversation =
+          engine.createConversation(
+            ConversationConfig(
+              samplerConfig =
+                if (backend is Backend.NPU) {
+                  null
+                } else {
+                  SamplerConfig(
+                    topK = topK,
+                    topP = topP.toDouble(),
+                    temperature = temperature.toDouble(),
+                  )
+                },
+              systemInstruction = systemInstruction,
+              tools = tools,
+            )
           )
-        )
-      ExperimentalFlags.enableConversationConstrainedDecoding = false
-      model.instance = LlmModelInstance(engine = engine, conversation = conversation)
+        return LlmModelInstance(engine = engine, conversation = conversation)
+      } catch (e: Exception) {
+        try {
+          engine.close()
+        } catch (closeError: Exception) {
+          Log.e(TAG, "Failed to close engine after initialization failure", closeError)
+        }
+        throw e
+      } finally {
+        ExperimentalFlags.enableSpeculativeDecoding = false
+        ExperimentalFlags.enableConversationConstrainedDecoding = false
+      }
+    }
+
+    // Create an instance of LiteRT LM engine and conversation, falling back from GPU to CPU when
+    // GPU initialization fails (OOM, driver issues) so low-RAM devices degrade instead of dying.
+    try {
+      model.instance =
+        try {
+          createInstance(preferredBackend)
+        } catch (e: Exception) {
+          val canFallBackToCpu =
+            preferredBackend is Backend.GPU && model.accelerators.contains(Accelerator.CPU)
+          if (!canFallBackToCpu) {
+            throw e
+          }
+          Log.w(TAG, "Initialization on GPU failed; retrying on CPU", e)
+          val instance = createInstance(Backend.CPU(), forceCpuVision = true)
+          // Best-effort, in-memory only: later initializations in this process go straight to
+          // CPU, and a config dialog opened after this shows CPU. Not persisted — the saved
+          // config still says GPU, so the next app start tries GPU again.
+          model.configValues =
+            model.configValues.toMutableMap().apply {
+              put(ConfigKeys.ACCELERATOR.label, Accelerator.CPU.label)
+            }
+          instance
+        }
     } catch (e: Exception) {
       val errorMsg = cleanUpMediapipeTaskErrorMessage(e.message ?: "Unknown error")
       model.markInitializationFailed(errorMsg)

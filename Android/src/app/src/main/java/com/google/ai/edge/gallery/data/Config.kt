@@ -274,12 +274,16 @@ fun createLlmChatConfigs(
   var maxTokensConfig: Config =
     LabelConfig(key = ConfigKeys.MAX_TOKENS, defaultValue = "$defaultMaxToken")
   if (defaultMaxContextLength != null) {
+    // Scale the slider floor to the model's context window: a hardcoded 2000 floor would exclude
+    // sane defaults on small-context models (e.g. a 2048-context model defaulting to 1024).
+    val sliderMin = minOf(2000f, defaultMaxContextLength.toFloat() / 2f)
     maxTokensConfig =
       NumberSliderConfig(
         key = ConfigKeys.MAX_TOKENS,
-        sliderMin = 2000f,
+        sliderMin = sliderMin,
         sliderMax = defaultMaxContextLength.toFloat(),
-        defaultValue = defaultMaxToken.toFloat(),
+        defaultValue =
+          defaultMaxToken.toFloat().coerceIn(sliderMin, defaultMaxContextLength.toFloat()),
         valueType = ValueType.INT,
       )
   }

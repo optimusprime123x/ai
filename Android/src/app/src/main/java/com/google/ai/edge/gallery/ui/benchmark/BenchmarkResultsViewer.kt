@@ -280,6 +280,19 @@ fun BenchmarkResultsViewer(
             contentAlignment = Alignment.TopCenter,
           ) {
             Column(modifier = Modifier.fillMaxWidth()) {
+              // Show why the last run produced no result.
+              val errorMessage = uiState.errorMessage
+              if (errorMessage != null) {
+                Text(
+                  errorMessage,
+                  color = MaterialTheme.colorScheme.error,
+                  style = MaterialTheme.typography.bodyMedium,
+                  textAlign = TextAlign.Center,
+                  modifier =
+                    Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 12.dp),
+                )
+              }
+
               // Results.
               //
               // Empty state.
