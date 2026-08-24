@@ -18,7 +18,6 @@
 * Remove Qwen2.5 from the default model list, warn on app start when the device has less than 4GB of RAM (pointing to Mobile Actions), and list Mobile Actions first among the other use cases.
 * Switch the Mobile Actions model to an ungated HuggingFace repo so it does not need auth.
 * The home screen's suggested AI Chat now launches a merged chat with skills, MCP tools, thinking, multimodal input, and the agent system prompt; the classic AI Chat and Agent Skills tasks remain available in the task list.
-* Shrink release APKs by removing unused library code and resources (R8).
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 
