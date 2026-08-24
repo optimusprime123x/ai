@@ -144,7 +144,6 @@ private val IMPORT_CONFIGS_LLM: List<Config> =
     ),
     BooleanSwitchConfig(key = ConfigKeys.SUPPORT_IMAGE, defaultValue = false),
     BooleanSwitchConfig(key = ConfigKeys.SUPPORT_AUDIO, defaultValue = false),
-    BooleanSwitchConfig(key = ConfigKeys.SUPPORT_TINY_GARDEN, defaultValue = false),
     BooleanSwitchConfig(key = ConfigKeys.SUPPORT_MOBILE_ACTIONS, defaultValue = false),
     BooleanSwitchConfig(key = ConfigKeys.SUPPORT_THINKING, defaultValue = false),
     BooleanSwitchConfig(key = ConfigKeys.SUPPORT_SPECULATIVE_DECODING, defaultValue = false),
@@ -303,12 +302,6 @@ fun ModelImportDialog(
                   valueType = ValueType.BOOLEAN,
                 )
                   as Boolean
-              val supportTinyGarden =
-                convertValueToTargetType(
-                  value = values.get(ConfigKeys.SUPPORT_TINY_GARDEN.label)!!,
-                  valueType = ValueType.BOOLEAN,
-                )
-                  as Boolean
               val supportMobileActions =
                 convertValueToTargetType(
                   value = values.get(ConfigKeys.SUPPORT_MOBILE_ACTIONS.label)!!,
@@ -342,7 +335,6 @@ fun ModelImportDialog(
                   this.supportAudio = supportAudio
                   this.supportMobileActions = supportMobileActions
                   this.supportThinking = supportThinking
-                  this.supportTinyGarden = supportTinyGarden
                   this.supportSpeculativeDecoding = supportSpeculativeDecoding
                 }
               }
