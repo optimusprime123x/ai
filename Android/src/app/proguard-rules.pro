@@ -6,17 +6,11 @@
 # unshrunk dex size comes from.
 -keep class com.google.ai.edge.gallery.** { *; }
 -keep class com.google.ai.edge.litertlm.** { *; }
--keep class com.google.mediapipe.** { *; }
 
 # Gson uses generic type information and TypeToken subclasses at runtime.
 -keepattributes Signature, *Annotation*, EnclosingMethod, InnerClasses
 -keep class com.google.gson.reflect.TypeToken { *; }
 -keep class * extends com.google.gson.reflect.TypeToken
-
-# MediaPipe references full-proto classes it doesn't ship (profiler/template paths unused by
-# tasks-vision at runtime).
--dontwarn com.google.mediapipe.proto.CalculatorProfileProto$CalculatorProfile
--dontwarn com.google.mediapipe.proto.GraphTemplateProto$CalculatorGraphTemplate
 
 # Shrink only, don't rename anything: obfuscation is what typically breaks reflection-based
 # code at runtime, while dead-code removal provides nearly all of the size win.
