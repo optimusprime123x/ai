@@ -25,12 +25,14 @@ import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.media.AudioManager
+import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.CalendarContract.Events
 import android.provider.CalendarContract.Instances
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
+import android.view.KeyEvent
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.net.toUri
 import com.google.ai.edge.gallery.notifications.NotificationScheduleManagerEntryPoint
@@ -39,6 +41,7 @@ import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.EntryPointAccessors
 import java.lang.Exception
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -87,6 +90,20 @@ data class AdjustVolumeParams(val direction: String? = null, val level: Int? = n
 
 @JsonClass(generateAdapter = true) data class OpenSettingsParams(val screen: String? = null)
 
+@JsonClass(generateAdapter = true)
+data class SetAlarmParams(val hour: Int? = null, val minute: Int? = null, val message: String? = null)
+
+@JsonClass(generateAdapter = true)
+data class SetTimerParams(val seconds: Int? = null, val message: String? = null)
+
+@JsonClass(generateAdapter = true) data class ShareTextParams(val text: String)
+
+@JsonClass(generateAdapter = true) data class OpenUrlParams(val url: String)
+
+@JsonClass(generateAdapter = true) data class WebSearchParams(val query: String)
+
+@JsonClass(generateAdapter = true) data class MediaKeyParams(val key: String)
+
 enum class IntentAction(val action: String) {
   SEND_EMAIL("send_email"),
   SEND_SMS("send_sms"),
@@ -98,7 +115,13 @@ enum class IntentAction(val action: String) {
   PLAY_MUSIC("play_music"),
   TOGGLE_FLASHLIGHT("toggle_flashlight"),
   ADJUST_VOLUME("adjust_volume"),
-  OPEN_SETTINGS("open_settings");
+  OPEN_SETTINGS("open_settings"),
+  SET_ALARM("set_alarm"),
+  SET_TIMER("set_timer"),
+  SHARE_TEXT("share_text"),
+  OPEN_URL("open_url"),
+  WEB_SEARCH("web_search"),
+  MEDIA_KEY("media_key");
 
   companion object {
     fun from(action: String): IntentAction? = entries.find { it.action == action }
@@ -138,10 +161,11 @@ object IntentHandler {
           val jsonAdapter = moshi.adapter(SendEmailParams::class.java)
           val params = jsonAdapter.fromJson(parameters)
           if (params != null) {
+            // ACTION_SENDTO with a mailto: URI targets email apps specifically; ACTION_SEND with
+            // a text type matches every text-sharing app and opens a generic share sheet.
             val intent =
-              Intent(Intent.ACTION_SEND).apply {
+              Intent(Intent.ACTION_SENDTO).apply {
                 data = "mailto:".toUri()
-                type = "text/plain"
                 putExtra(Intent.EXTRA_EMAIL, arrayOf(params.extra_email))
                 putExtra(Intent.EXTRA_SUBJECT, params.extra_subject)
                 putExtra(Intent.EXTRA_TEXT, params.extra_text)
@@ -152,6 +176,8 @@ object IntentHandler {
             Log.e(TAG, "Failed to parse send_email parameters: $parameters")
             "failed"
           }
+        } catch (e: ActivityNotFoundException) {
+          "failed: no email app on this device"
         } catch (e: Exception) {
           Log.e(TAG, "Failed to parse send_email parameters: $parameters", e)
           "failed"
@@ -225,7 +251,169 @@ object IntentHandler {
       IntentAction.TOGGLE_FLASHLIGHT -> toggleFlashlight(context, parameters)
       IntentAction.ADJUST_VOLUME -> adjustVolume(context, parameters)
       IntentAction.OPEN_SETTINGS -> openSettings(context, parameters)
+      IntentAction.SET_ALARM -> setAlarm(context, parameters)
+      IntentAction.SET_TIMER -> setTimer(context, parameters)
+      IntentAction.SHARE_TEXT -> shareText(context, parameters)
+      IntentAction.OPEN_URL -> openUrl(context, parameters)
+      IntentAction.WEB_SEARCH -> webSearch(context, parameters)
+      IntentAction.MEDIA_KEY -> mediaKey(context, parameters)
       null -> "failed"
+    }
+  }
+
+  /** Sets an alarm in the device's clock app. */
+  fun setAlarm(context: Context, parameters: String): String {
+    return try {
+      val params =
+        Moshi.Builder().build().adapter(SetAlarmParams::class.java).fromJson(parameters)
+      val hour = params?.hour ?: return "failed: missing hour (0-23) and minute (0-59)"
+      val minute = params.minute ?: return "failed: missing minute (0-59)"
+      if (hour !in 0..23 || minute !in 0..59) {
+        return "failed: hour must be 0-23 and minute must be 0-59"
+      }
+      val intent =
+        Intent(AlarmClock.ACTION_SET_ALARM).apply {
+          putExtra(AlarmClock.EXTRA_HOUR, hour)
+          putExtra(AlarmClock.EXTRA_MINUTES, minute)
+          params.message?.let { putExtra(AlarmClock.EXTRA_MESSAGE, it) }
+          putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+      context.startActivity(intent)
+      "succeeded: alarm set for %02d:%02d".format(Locale.US, hour, minute)
+    } catch (e: ActivityNotFoundException) {
+      "failed: no clock app on this device"
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to set alarm. Parameters: $parameters", e)
+      "failed: ${e.message}"
+    }
+  }
+
+  /** Starts a countdown timer in the device's clock app. */
+  fun setTimer(context: Context, parameters: String): String {
+    return try {
+      val params =
+        Moshi.Builder().build().adapter(SetTimerParams::class.java).fromJson(parameters)
+      val seconds = params?.seconds ?: return "failed: missing seconds (total timer length)"
+      if (seconds !in 1..86_400) {
+        return "failed: seconds must be between 1 and 86400"
+      }
+      val intent =
+        Intent(AlarmClock.ACTION_SET_TIMER).apply {
+          putExtra(AlarmClock.EXTRA_LENGTH, seconds)
+          params.message?.let { putExtra(AlarmClock.EXTRA_MESSAGE, it) }
+          putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+      context.startActivity(intent)
+      "succeeded: timer started for $seconds seconds"
+    } catch (e: ActivityNotFoundException) {
+      "failed: no clock app on this device"
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to set timer. Parameters: $parameters", e)
+      "failed: ${e.message}"
+    }
+  }
+
+  /** Opens the system share sheet with the given text; the user picks the target app. */
+  fun shareText(context: Context, parameters: String): String {
+    return try {
+      val params =
+        Moshi.Builder().build().adapter(ShareTextParams::class.java).fromJson(parameters)
+      val text = params?.text?.trim() ?: ""
+      if (text.isEmpty()) return "failed: missing text"
+      val sendIntent =
+        Intent(Intent.ACTION_SEND).apply {
+          type = "text/plain"
+          putExtra(Intent.EXTRA_TEXT, text)
+        }
+      val chooser =
+        Intent.createChooser(sendIntent, null).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+      context.startActivity(chooser)
+      "succeeded: share sheet opened, the user picks the app"
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to share text. Parameters: $parameters", e)
+      "failed: ${e.message}"
+    }
+  }
+
+  /** Opens a web page in the user's browser. */
+  fun openUrl(context: Context, parameters: String): String {
+    return try {
+      val params = Moshi.Builder().build().adapter(OpenUrlParams::class.java).fromJson(parameters)
+      var url = params?.url?.trim() ?: ""
+      if (url.isEmpty()) return "failed: missing url"
+      if (url.any { it.isWhitespace() } || !url.contains('.')) {
+        return "failed: \"$url\" is not a web address. To search the web, use web_search instead."
+      }
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = "https://$url"
+      }
+      context.startActivity(
+        Intent(Intent.ACTION_VIEW, url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      )
+      "succeeded: opened $url in the browser"
+    } catch (e: ActivityNotFoundException) {
+      "failed: no browser on this device"
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to open url. Parameters: $parameters", e)
+      "failed: ${e.message}"
+    }
+  }
+
+  /** Runs a web search in the user's browser/search app. */
+  fun webSearch(context: Context, parameters: String): String {
+    return try {
+      val params =
+        Moshi.Builder().build().adapter(WebSearchParams::class.java).fromJson(parameters)
+      val query = params?.query?.trim() ?: ""
+      if (query.isEmpty()) return "failed: missing query"
+      try {
+        context.startActivity(
+          Intent(Intent.ACTION_WEB_SEARCH)
+            .putExtra(SearchManager.QUERY, query)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+      } catch (e: ActivityNotFoundException) {
+        // No dedicated search activity; fall back to a search URL in the browser.
+        val encoded = URLEncoder.encode(query, "UTF-8")
+        context.startActivity(
+          Intent(Intent.ACTION_VIEW, "https://www.google.com/search?q=$encoded".toUri())
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+      }
+      "succeeded: searching the web for \"$query\""
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to web search. Parameters: $parameters", e)
+      "failed: ${e.message}"
+    }
+  }
+
+  /** Sends a media key event (play/pause, next, previous, stop) to the active media app. */
+  fun mediaKey(context: Context, parameters: String): String {
+    return try {
+      val params = Moshi.Builder().build().adapter(MediaKeyParams::class.java).fromJson(parameters)
+      val keyCode =
+        when (params?.key?.trim()?.lowercase(Locale.getDefault())) {
+          "play", "pause", "play_pause", "playpause" -> KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
+          "next", "skip" -> KeyEvent.KEYCODE_MEDIA_NEXT
+          "previous", "prev", "back" -> KeyEvent.KEYCODE_MEDIA_PREVIOUS
+          "stop" -> KeyEvent.KEYCODE_MEDIA_STOP
+          else -> return "failed: key must be one of play_pause, next, previous, stop"
+        }
+      val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+      val wasMusicActive = audioManager.isMusicActive
+      audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+      audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
+      if (wasMusicActive) {
+        "succeeded: sent ${params?.key} to the media app"
+      } else {
+        "sent ${params?.key}, but nothing seems to be playing so it may have no effect." +
+          " To start music, use play_music instead."
+      }
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to send media key. Parameters: $parameters", e)
+      "failed: ${e.message}"
     }
   }
 

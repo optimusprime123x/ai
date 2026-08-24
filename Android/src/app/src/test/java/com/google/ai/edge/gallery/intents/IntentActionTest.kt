@@ -30,6 +30,12 @@ class IntentActionTest {
     assertEquals(IntentAction.TOGGLE_FLASHLIGHT, IntentAction.from("toggle_flashlight"))
     assertEquals(IntentAction.ADJUST_VOLUME, IntentAction.from("adjust_volume"))
     assertEquals(IntentAction.OPEN_SETTINGS, IntentAction.from("open_settings"))
+    assertEquals(IntentAction.SET_ALARM, IntentAction.from("set_alarm"))
+    assertEquals(IntentAction.SET_TIMER, IntentAction.from("set_timer"))
+    assertEquals(IntentAction.SHARE_TEXT, IntentAction.from("share_text"))
+    assertEquals(IntentAction.OPEN_URL, IntentAction.from("open_url"))
+    assertEquals(IntentAction.WEB_SEARCH, IntentAction.from("web_search"))
+    assertEquals(IntentAction.MEDIA_KEY, IntentAction.from("media_key"))
     assertNull(IntentAction.from("no_such_action"))
   }
 }

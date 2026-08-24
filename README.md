@@ -23,6 +23,9 @@
 * Add device actions as built-in skills (open apps, play music, flashlight, volume, settings panels), tighten the AI Chat Complete prompt, and make tool/skill mix-ups self-correcting for small models; bump to version 1.5.0.
 * Remove the never-functional Firebase Analytics/FCM stack (drops the accounts/push permissions and shrinks the APK), show the remaining-time estimate during model downloads, and drop the stale "history does not persist" notice.
 * Fix the model list loading forever with no retry when the allowlist fetch fails, add the multimodal Qwen3.5-0.8B model (recommended for 4-6GB devices), and align the Gemma memory requirements with the recommendation tiers (E2B needs 6GB, E4B needs 8GB); bump to version 1.6.0.
+* Make multi-GB downloads survivable: resume instead of restarting after a failure, retry transient network errors with backoff, wait for connectivity, and verify the downloaded size (plus guard against servers that ignore range requests).
+* Serve models more robustly: fall back from GPU to CPU when engine init fails, restore chat history after an error re-initializes the session, bound the allowlist fetch with timeouts, fix the max-tokens slider on small-context models, and stop a failed benchmark from wedging the screen.
+* More device actions (alarms, timers, share, open website, web search, music playback keys), the current date/time in the agent prompt (no more date-math tool chains), an email intent that actually opens email apps, vendored JS libraries so the QR code and mood tracker skills work offline, and properly documented tool parameters for every skill.
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 

@@ -781,15 +781,17 @@ private fun resetSessionWithCurrentSkillsAndMcps(
   val selectedSkills =
     runBlocking(Dispatchers.Default) { skillManagerViewModel.skillManager.getAvailableSkills() }
   val finalSystemPrompt =
-    PromptExpander()
-      .formatSystemInstructions(
-        template = actualSystemPrompt,
-        substitutions =
-          mapOf(
-            "___SKILLS___" to formatSelectedSkills(selectedSkills),
-            "___TOOLS___" to toolsPrompt,
-          ),
-      )
+    appendCurrentDateTime(
+      PromptExpander()
+        .formatSystemInstructions(
+          template = actualSystemPrompt,
+          substitutions =
+            mapOf(
+              "___SKILLS___" to formatSelectedSkills(selectedSkills),
+              "___TOOLS___" to toolsPrompt,
+            ),
+        )
+    )
 
   viewModel.resetSession(
     task = task,
