@@ -38,6 +38,7 @@ import com.google.ai.edge.gallery.data.KEY_MODEL_DOWNLOAD_RECEIVED_BYTES
 import com.google.ai.edge.gallery.data.KEY_MODEL_DOWNLOAD_REMAINING_MS
 import com.google.ai.edge.gallery.data.KEY_MODEL_EXTRA_DATA_DOWNLOAD_FILE_NAMES
 import com.google.ai.edge.gallery.data.KEY_MODEL_EXTRA_DATA_URLS
+import com.google.ai.edge.gallery.data.KEY_MODEL_FILE_SIZES
 import com.google.ai.edge.gallery.data.KEY_MODEL_IS_IMPORTED
 import com.google.ai.edge.gallery.data.KEY_MODEL_IS_ZIP
 import com.google.ai.edge.gallery.data.KEY_MODEL_NAME
@@ -55,15 +56,20 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private const val TAG = "AGDownloadWorker"
 
-data class UrlAndFileName(val url: String, val fileName: String)
+data class UrlAndFileName(val url: String, val fileName: String, val sizeInBytes: Long = 0L)
+
+/** Errors that retrying cannot fix (bad URL, missing or expired token, ...). */
+private class NonRetryableDownloadException(message: String) : Exception(message)
 
 private const val FOREGROUND_NOTIFICATION_CHANNEL_ID = "model_download_channel_foreground"
 private var channelCreated = false
+private const val MAX_RETRY_ATTEMPTS = 5
 
 class DownloadWorker(context: Context, params: WorkerParameters) :
   CoroutineWorker(context, params) {
@@ -104,6 +110,10 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
     val extraDataFileNames =
       inputData.getString(KEY_MODEL_EXTRA_DATA_DOWNLOAD_FILE_NAMES)?.split(",") ?: listOf()
     val totalBytes = inputData.getLong(KEY_MODEL_TOTAL_BYTES, 0L)
+    // Expected size of each file (main file first, then extra data files); 0 = unknown.
+    val fileSizes =
+      inputData.getString(KEY_MODEL_FILE_SIZES)?.split(",")?.map { it.toLongOrNull() ?: 0L }
+        ?: listOf()
     val accessToken = inputData.getString(KEY_MODEL_DOWNLOAD_ACCESS_TOKEN)
 
     return withContext(Dispatchers.IO) {
@@ -116,10 +126,20 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
 
           // Collect data for all files.
           val allFiles: MutableList<UrlAndFileName> = mutableListOf()
-          allFiles.add(UrlAndFileName(url = fileUrl, fileName = fileName))
+          allFiles.add(
+            UrlAndFileName(
+              url = fileUrl,
+              fileName = fileName,
+              sizeInBytes = fileSizes.getOrElse(0) { 0L },
+            )
+          )
           for (index in extraDataFileUrls.indices) {
             allFiles.add(
-              UrlAndFileName(url = extraDataFileUrls[index], fileName = extraDataFileNames[index])
+              UrlAndFileName(
+                url = extraDataFileUrls[index],
+                fileName = extraDataFileNames[index],
+                sizeInBytes = fileSizes.getOrElse(index + 1) { 0L },
+              )
             )
           }
           Log.d(TAG, "About to download: $allFiles")
@@ -130,14 +150,6 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
           val bytesReadSizeBuffer: MutableList<Long> = mutableListOf()
           val bytesReadLatencyBuffer: MutableList<Long> = mutableListOf()
           for (file in allFiles) {
-            val url = URL(file.url)
-
-            val connection = url.openConnection() as HttpURLConnection
-            if (accessToken != null) {
-              Log.d(TAG, "Using access token: ${accessToken.subSequence(0, 10)}...")
-              connection.setRequestProperty("Authorization", "Bearer $accessToken")
-            }
-
             // Prepare output file's dir.
             val outputDir =
               if (isModelImported) {
@@ -167,19 +179,48 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
                     .joinToString(separator = File.separator),
                 )
               }
-            val outputFileBytes = outputTmpFile.length()
-            if (outputFileBytes > 0) {
+            // On a retry, files completed by a previous attempt are already renamed to their
+            // final name; don't download them again.
+            val originalFile = File(outputTmpFile.absolutePath.replace(".$TMP_FILE_EXT", ""))
+            if (
+              originalFile.exists() &&
+                (file.sizeInBytes <= 0L || originalFile.length() == file.sizeInBytes)
+            ) {
+              Log.d(TAG, "File '${originalFile.name}' already fully downloaded. Skipping")
+              downloadedBytes += originalFile.length()
+              continue
+            }
+
+            var outputFileBytes = outputTmpFile.length()
+            // A partial file at least as long as the full file can't be resumed (the server
+            // would answer 416 forever); it can only be corrupt, so start this file over.
+            if (file.sizeInBytes > 0L && outputFileBytes >= file.sizeInBytes) {
+              Log.d(TAG, "Partial file is not shorter than the full file. Starting over")
+              outputTmpFile.delete()
+              outputFileBytes = 0L
+            }
+
+            val connection = URL(file.url).openConnection() as HttpURLConnection
+            if (accessToken != null) {
+              Log.d(TAG, "Using access token: ${accessToken.subSequence(0, 10)}...")
+              connection.setRequestProperty("Authorization", "Bearer $accessToken")
+            }
+            // Ask for non-compressed data so byte counts match the file on the server (also
+            // required for download resuming to work).
+            connection.setRequestProperty("Accept-Encoding", "identity")
+            val rangeRequested = outputFileBytes > 0
+            if (rangeRequested) {
               Log.d(
                 TAG,
                 "File '${outputTmpFile.name}' partial size: ${outputFileBytes}. Trying to resume download",
               )
               connection.setRequestProperty("Range", "bytes=${outputFileBytes}-")
-              // Force the server to send non-compressed data to make download resuming work.
-              connection.setRequestProperty("Accept-Encoding", "identity")
             }
             connection.connect()
             Log.d(TAG, "response code: ${connection.responseCode}")
 
+            var fileDownloadedBytes = 0L
+            var serverTotalBytes = 0L
             if (
               connection.responseCode == HttpURLConnection.HTTP_OK ||
                 connection.responseCode == HttpURLConnection.HTTP_PARTIAL
@@ -187,21 +228,54 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
               val contentRange = connection.getHeaderField("Content-Range")
 
               if (contentRange != null) {
-                // Parse the Content-Range header
+                // Parse the Content-Range header ("bytes start-end/total").
                 val rangeParts = contentRange.substringAfter("bytes ").split("/")
                 val byteRange = rangeParts[0].split("-")
                 val startByte = byteRange[0].toLong()
                 val endByte = byteRange[1].toLong()
+                serverTotalBytes = rangeParts.getOrNull(1)?.toLongOrNull() ?: 0L
 
                 Log.d(
                   TAG,
                   "Content-Range: $contentRange. Start bytes: ${startByte}, end bytes: $endByte",
                 )
 
+                if (startByte != outputFileBytes) {
+                  // The server resumed from an offset other than the partial file's end; appending
+                  // this body would corrupt the file.
+                  outputTmpFile.delete()
+                  if (startByte != 0L) {
+                    throw IOException(
+                      "Resume offset mismatch (expected $outputFileBytes, got $startByte)"
+                    )
+                  }
+                }
+                fileDownloadedBytes = startByte
                 downloadedBytes += startByte
               } else {
                 Log.d(TAG, "Download starts from beginning.")
+                serverTotalBytes = connection.contentLengthLong.coerceAtLeast(0L)
+                if (rangeRequested) {
+                  // The server ignored the Range request and is sending the whole file; appending
+                  // it to the partial file would corrupt it, so start this file over.
+                  outputTmpFile.delete()
+                }
               }
+            } else if (
+              connection.responseCode == 416 /* Range Not Satisfiable */ && rangeRequested
+            ) {
+              // The partial file is longer than what the server has, so it can't be valid.
+              // Drop it and let the retry start this file from scratch.
+              outputTmpFile.delete()
+              throw IOException("HTTP 416: partial file not resumable, starting this file over")
+            } else if (
+              connection.responseCode in 400..499 &&
+                connection.responseCode != 408 &&
+                connection.responseCode != 429
+            ) {
+              // Client errors (bad URL, missing/expired token, ...) won't be fixed by retrying;
+              // fail immediately so the user sees the error instead of minutes of backoff.
+              throw NonRetryableDownloadException("HTTP error code: ${connection.responseCode}")
             } else {
               throw IOException("HTTP error code: ${connection.responseCode}")
             }
@@ -216,6 +290,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
             while (inputStream.read(buffer).also { bytesRead = it } != -1) {
               outputStream.write(buffer, 0, bytesRead)
               downloadedBytes += bytesRead
+              fileDownloadedBytes += bytesRead
               deltaBytes += bytesRead
 
               // Report progress every 200 ms.
@@ -264,9 +339,20 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
             outputStream.close()
             inputStream.close()
 
+            // The stream can end early without an exception (e.g. the server closed the
+            // connection); renaming a short file would present a corrupt model as downloaded.
+            // Prefer the size the server itself reported over the allowlist metadata, and keep
+            // the tmp file so the retry can resume from where it stopped.
+            val expectedFileBytes =
+              if (serverTotalBytes > 0L) serverTotalBytes else file.sizeInBytes
+            if (expectedFileBytes > 0L && fileDownloadedBytes < expectedFileBytes) {
+              throw IOException(
+                "Download incomplete: received $fileDownloadedBytes of $expectedFileBytes bytes" +
+                  " for ${file.fileName}"
+              )
+            }
+
             // Rename the tmp file to the original file name by removing the tmp file ext.
-            val originalFilePath = outputTmpFile.absolutePath.replace(".$TMP_FILE_EXT", "")
-            val originalFile = File(originalFilePath)
             if (originalFile.exists()) {
               originalFile.delete()
             }
@@ -325,11 +411,27 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
             }
           }
           Result.success()
-        } catch (e: IOException) {
+        } catch (e: Exception) {
+          // Don't convert a cancellation (user cancel / WorkManager stop) into failure/retry.
+          if (e is CancellationException) {
+            throw e
+          }
           Log.e(TAG, e.message, e)
-          Result.failure(
-            Data.Builder().putString(KEY_MODEL_DOWNLOAD_ERROR_MESSAGE, e.message).build()
-          )
+          // Transient network errors are retried with backoff (the request's network constraint
+          // re-gates on connectivity); anything else, or too many attempts, fails for good.
+          if (e is IOException && runAttemptCount < MAX_RETRY_ATTEMPTS) {
+            Log.d(TAG, "Retrying download (attempt ${runAttemptCount + 1})")
+            Result.retry()
+          } else {
+            Result.failure(
+              Data.Builder()
+                .putString(
+                  KEY_MODEL_DOWNLOAD_ERROR_MESSAGE,
+                  e.message ?: e.javaClass.simpleName,
+                )
+                .build()
+            )
+          }
         }
       }
     }

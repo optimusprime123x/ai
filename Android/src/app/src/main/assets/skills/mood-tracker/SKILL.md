@@ -13,7 +13,8 @@ The `mood-tracker` skill helps you keep track of your daily emotional well-being
 
 #### 1. Log Mood
 When a user wants to log their mood, call the `run_js` tool with:
-- **script name**: `index.html`
+- **skillName**: `mood-tracker`
+- **scriptName**: `index.html`
 - **data**: A JSON string with:
   - `action`: "log_mood"
   - `score`: Number (1-10)
@@ -26,14 +27,16 @@ When a user wants to log their mood, call the `run_js` tool with:
 
 #### 2. Get Mood for a Specific Date
 When a user asks what their mood was on a specific date, call the `run_js` tool with:
-- **script name**: `index.html`
+- **skillName**: `mood-tracker`
+- **scriptName**: `index.html`
 - **data**: A JSON string with:
   - `action`: "get_mood"
   - `date`: String (Identify the date from the user's request)
 
 #### 3. Get History / Show Dashboard
 When a user wants to see their mood history ("last week", "past 10 days") or the dashboard, call the `run_js` tool with:
-- **script name**: `index.html`
+- **skillName**: `mood-tracker`
+- **scriptName**: `index.html`
 - **data**: A JSON string with:
   - `action`: "get_history"
   - `days`: Number (Optional, default 7. E.g., for "last week" use 7)
@@ -41,7 +44,8 @@ When a user wants to see their mood history ("last week", "past 10 days") or the
 
 #### 4. Plot Mood Trends (Line Chart)
 When a user wants to visualize their mood trends with a chart (e.g., "Plot my mood for 7 days"), call the `run_js` tool with:
-- **script name**: `index.html`
+- **skillName**: `mood-tracker`
+- **scriptName**: `index.html`
 - **data**: A JSON string with:
   - `action`: "get_history"
   - `days`: Number (Optional, default 7)
@@ -59,20 +63,23 @@ When a user asks for an analysis of their mood (e.g., "Are there any trends?", "
 
 #### 6. Delete Mood for a Specific Date
 When a user wants to delete only a single day's entry (e.g., "Delete my mood for today"), call the `run_js` tool with:
-- **script name**: `index.html`
+- **skillName**: `mood-tracker`
+- **scriptName**: `index.html`
 - **data**: A JSON string with:
   - `action`: "delete_mood"
   - `date`: String (Identify the date)
 
 #### 7. Export Data (Backup)
 When a user wants to backup or export their data, call the `run_js` tool with:
-- **script name**: `index.html`
+- **skillName**: `mood-tracker`
+- **scriptName**: `index.html`
 - **data**: A JSON string with:
   - `action`: "export_data"
 
 #### 8. Wipe All Data
 When a user wants to clear their entire mood history and start fresh, call the `run_js` tool with:
-- **script name**: `index.html`
+- **skillName**: `mood-tracker`
+- **scriptName**: `index.html`
 - **data**: A JSON string with:
   - `action`: "wipe_data"
 

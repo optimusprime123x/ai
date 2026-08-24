@@ -63,6 +63,7 @@ class RunJsTool(
           "\n- skillName: ${skillName}\n- scriptName: ${scriptName}\n- data: ${data}\n",
       )
 
+      // SkillManager.loadSkill already matches names flexibly (case, spaces, underscores).
       val skill = skillsProvider.loadSkill(skillName)
 
       if (skill == null) {
@@ -70,12 +71,16 @@ class RunJsTool(
           ?.actionChannel
           ?.send(
             SkillProgressToolAction(
-              label = "Failed to call skill \"$scriptName\"",
+              label = "Failed to call skill \"$skillName\"",
               inProgress = false,
             )
           )
+        val availableSkills =
+          skillsProvider.getAvailableSkills().filter { it.selected }.joinToString(", ") { it.name }
         return@runBlocking mapOf(
-          "error" to "Skill \"${scriptName}\" not found",
+          "error" to
+            ("Skill \"$skillName\" not found. Available skills: $availableSkills. " +
+              "Call load_skill first to get the skill's exact instructions."),
           "status" to "failed",
         )
       }
@@ -84,7 +89,7 @@ class RunJsTool(
       var secret = ""
       if (skill.requireSecret) {
         val savedSecret =
-          dataStoreRepository.readSecret(key = getSkillSecretKey(skillName = skillName))
+          dataStoreRepository.readSecret(key = getSkillSecretKey(skillName = skill.name))
         if (savedSecret == null || savedSecret.isEmpty()) {
           val action =
             AskInfoToolAction(
@@ -98,7 +103,7 @@ class RunJsTool(
           secret = action.result.await()
           if (secret.isNotEmpty()) {
             dataStoreRepository.saveSecret(
-              key = getSkillSecretKey(skillName = skillName),
+              key = getSkillSecretKey(skillName = skill.name),
               value = secret,
             )
             Log.d(TAG, "Got Secret from ask info dialog: ${secret.substring(0, 3)}")

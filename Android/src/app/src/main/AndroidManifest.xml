@@ -39,6 +39,10 @@
 
     <!-- Required for resurfacing notifications after boot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Required for the set_alarm/set_timer agent actions to invoke the clock app's
+         ACTION_SET_ALARM/ACTION_SET_TIMER intents (and to skip its confirmation UI).
+         Install-time permission, no runtime prompt. -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <uses-feature
         android:name="android.hardware.camera"

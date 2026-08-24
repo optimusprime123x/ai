@@ -40,6 +40,7 @@ import kotlin.coroutines.resume
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.random.Random
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -74,6 +75,7 @@ data class BenchmarkUiState(
   val running: Boolean = false,
   val totalRunCount: Int = 0,
   val completedRunCount: Int = 0,
+  val errorMessage: String? = null,
 )
 
 @HiltViewModel
@@ -107,6 +109,7 @@ constructor(
       setRunProgress(completedRunCount = 0)
       setTotalRunCount(totalRunCount = runCount)
       setShowResultsViewer(showResultsViewer = true)
+      setError(errorMessage = null)
 
       val parts: List<String> =
         listOf(
@@ -118,7 +121,8 @@ constructor(
         )
       Log.d(TAG, "Running benchmark: ${parts.joinToString("\n")}")
 
-      // TODO: handle error.
+      var benchmarkCacheDirToCleanUp: File? = null
+      try {
       val startMs = System.currentTimeMillis()
       val prefillSpeeds = mutableListOf<Double>()
       val decodeSpeeds = mutableListOf<Double>()
@@ -127,9 +131,9 @@ constructor(
       val nonFirstInitTimes = mutableListOf<Double>()
       var endMs = 0L
         run {
-        // Create a temporary cache dir to run benchmark in.
+        // Create a temporary cache dir to run benchmark in. Deleted in `finally` so a failed
+        // run doesn't leave the (potentially large) compiled-model cache behind.
         val timestamp = System.currentTimeMillis()
-        var needCleanUpCacheDir = true
         val benchmarkCacheDir = File(appContext.cacheDir, "benchmark_$timestamp")
         var cacheDirPath = benchmarkCacheDir.absolutePath
         if (!benchmarkCacheDir.mkdirs()) {
@@ -138,7 +142,8 @@ constructor(
             "Failed to create benchmark cache directory: ${benchmarkCacheDir.absolutePath}",
           )
           cacheDirPath = appContext.cacheDir.absolutePath
-          needCleanUpCacheDir = false
+        } else {
+          benchmarkCacheDirToCleanUp = benchmarkCacheDir
         }
         Log.d(TAG, "Using benchmark cache dir: $cacheDirPath")
         val backend: Backend =
@@ -175,10 +180,6 @@ constructor(
           setRunProgress(completedRunCount = i + 1)
         }
         endMs = System.currentTimeMillis()
-        if (needCleanUpCacheDir) {
-          benchmarkCacheDir.deleteRecursively()
-          Log.d(TAG, "Cleaned up benchmark cache dir: ${benchmarkCacheDir.absolutePath}")
-        }
       }
 
       // Create and add benchmark result.
@@ -211,13 +212,35 @@ constructor(
       val newId = addBenchmarkResult(result = result)
       collapseAll()
       setExpanded(id = newId, expanded = true)
-
-      setRunning(running = false)
+      } catch (e: Exception) {
+        // Don't treat leaving the screen (scope cancellation) as a failed benchmark.
+        if (e is CancellationException) {
+          throw e
+        }
+        // Without this, a benchmark failure leaves `running` stuck at true and the results
+        // viewer wedged open with no way to dismiss it. Keep the viewer open and tell the
+        // user what happened instead of silently vanishing.
+        Log.e(TAG, "Benchmark failed", e)
+        setError(errorMessage = "Benchmark failed: ${e.message ?: e.javaClass.simpleName}")
+      } finally {
+        benchmarkCacheDirToCleanUp?.deleteRecursively()
+        setRunning(running = false)
+      }
     }
   }
 
   fun setShowResultsViewer(showResultsViewer: Boolean) {
-    _uiState.update { _uiState.value.copy(showResultsViewer = showResultsViewer) }
+    _uiState.update {
+      _uiState.value.copy(
+        showResultsViewer = showResultsViewer,
+        // A stale failure notice shouldn't greet the next time the viewer opens.
+        errorMessage = if (showResultsViewer) _uiState.value.errorMessage else null,
+      )
+    }
+  }
+
+  fun setError(errorMessage: String?) {
+    _uiState.update { _uiState.value.copy(errorMessage = errorMessage) }
   }
 
   fun setRunning(running: Boolean) {

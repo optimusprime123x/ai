@@ -1,0 +1,238 @@
+{
+  "models": [
+    {
+      "name": "Gemma-4-E2B-it",
+      "modelId": "litert-community/gemma-4-E2B-it-litert-lm",
+      "modelFile": "gemma-4-E2B-it.litertlm",
+      "description": "A variant of Gemma 4 E2B ready for deployment on Android using [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM/blob/main/docs/api/kotlin/getting_started.md). It supports multi-modality input, with up to 32K context length.",
+      "sizeInBytes": 2588147712,
+      "minDeviceMemoryInGb": 6,
+      "commitHash": "6e5c4f1e395deb959c494953478fa5cec4b8008f",
+      "llmSupportImage": true,
+      "llmSupportAudio": true,
+      "capabilities": [
+        "llm_thinking",
+        "speculative_decoding"
+      ],
+      "defaultConfig": {
+        "topK": 64,
+        "topP": 0.95,
+        "temperature": 1.0,
+        "maxContextLength": 32000,
+        "maxTokens": 4000,
+        "accelerators": "gpu,cpu",
+        "visionAccelerator": "gpu"
+      },
+      "taskTypes": [
+        "llm_chat",
+        "llm_prompt_lab",
+        "llm_agent_chat",
+        "llm_ask_image",
+        "llm_ask_audio"
+      ],
+      "bestForTaskTypes": [
+        "llm_chat",
+        "llm_prompt_lab",
+        "llm_agent_chat",
+        "llm_ask_image",
+        "llm_ask_audio"
+      ],
+      "capabilityToTaskTypes": {
+        "llm_thinking": [
+          "llm_chat",
+          "llm_ask_image",
+          "llm_ask_audio"
+        ],
+        "speculative_decoding": [
+          "llm_chat",
+          "llm_ask_image",
+          "llm_ask_audio",
+          "llm_prompt_lab"
+        ]
+      },
+      "updatableModelFiles": [
+        {
+          "fileName": "gemma-4-E2B-it.litertlm",
+          "commitHash": "7fa1d78473894f7e736a21d920c3aa80f950c0db"
+        }
+      ],
+      "updateInfo": "The updated model now leverages Gemma 4's built-in Multi Token Prediction (MTP) for faster decode on select workloads. You can enable or disable MTP using a new toggle in chat configuration.",
+      "recommendedRamMinGb": 6,
+      "recommendedRamMaxGb": 8
+    },
+    {
+      "name": "Gemma-4-E4B-it",
+      "modelId": "litert-community/gemma-4-E4B-it-litert-lm",
+      "modelFile": "gemma-4-E4B-it.litertlm",
+      "description": "A variant of Gemma 4 E4B ready for deployment on Android using [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM/blob/main/docs/api/kotlin/getting_started.md). It supports multi-modality input, with up to 32K context length.",
+      "sizeInBytes": 3659530240,
+      "minDeviceMemoryInGb": 8,
+      "commitHash": "28299f30ee4d43294517a4ac93abd6163412f07f",
+      "llmSupportImage": true,
+      "llmSupportAudio": true,
+      "capabilities": [
+        "llm_thinking",
+        "speculative_decoding"
+      ],
+      "defaultConfig": {
+        "topK": 64,
+        "topP": 0.95,
+        "temperature": 1.0,
+        "maxContextLength": 32000,
+        "maxTokens": 4000,
+        "accelerators": "gpu,cpu",
+        "visionAccelerator": "gpu"
+      },
+      "taskTypes": [
+        "llm_chat",
+        "llm_prompt_lab",
+        "llm_agent_chat",
+        "llm_ask_image",
+        "llm_ask_audio"
+      ],
+      "bestForTaskTypes": [
+        "llm_chat",
+        "llm_prompt_lab",
+        "llm_agent_chat",
+        "llm_ask_image",
+        "llm_ask_audio"
+      ],
+      "capabilityToTaskTypes": {
+        "llm_thinking": [
+          "llm_chat",
+          "llm_ask_image",
+          "llm_ask_audio"
+        ],
+        "speculative_decoding": [
+          "llm_chat",
+          "llm_ask_image",
+          "llm_ask_audio",
+          "llm_prompt_lab"
+        ]
+      },
+      "updatableModelFiles": [
+        {
+          "fileName": "gemma-4-E4B-it.litertlm",
+          "commitHash": "9695417f248178c63a9f318c6e0c56cb917cb837"
+        }
+      ],
+      "updateInfo": "The updated model now leverages Gemma 4's built-in Multi Token Prediction (MTP) for faster decode on select workloads. You can enable or disable MTP using a new toggle in chat configuration.",
+      "recommendedRamMinGb": 8
+    },
+    {
+      "name": "SuperGemma4-E4B-abliterated",
+      "modelId": "typomonster/supergemma4-e4b-abliterated-litert-lm",
+      "modelFile": "supergemma4-e4b-abliterated.litertlm",
+      "description": "An unofficial abliterated version of the gemma4-e4b model with significantly lower refusals. Based on Gemma 4 E4B; supports vision input with up to 32K context length.",
+      "sizeInBytes": 3654467584,
+      "minDeviceMemoryInGb": 8,
+      "commitHash": "3cb37a0fe1688c84cdb9faaa273052d82b8ca68b",
+      "llmSupportImage": true,
+      "uncensored": true,
+      "defaultConfig": {
+        "topK": 64,
+        "topP": 0.95,
+        "temperature": 1.0,
+        "maxContextLength": 32000,
+        "maxTokens": 4000,
+        "accelerators": "gpu,cpu",
+        "visionAccelerator": "gpu"
+      },
+      "taskTypes": [
+        "llm_chat",
+        "llm_prompt_lab",
+        "llm_agent_chat",
+        "llm_ask_image"
+      ],
+      "capabilities": [
+        "llm_thinking",
+        "speculative_decoding"
+      ],
+      "capabilityToTaskTypes": {
+        "llm_thinking": [
+          "llm_chat",
+          "llm_ask_image"
+        ],
+        "speculative_decoding": [
+          "llm_chat",
+          "llm_ask_image",
+          "llm_prompt_lab"
+        ]
+      }
+    },
+    {
+      "name": "Qwen3.5-0.8B",
+      "modelId": "GabrieleConte/Qwen3.5-0.8B-LiteRT",
+      "modelFile": "qwen35_mm_q8_ekv2048.litertlm",
+      "description": "A community LiteRT-LM conversion of Qwen3.5 0.8B with the full multimodal pipeline (vision included), sized for phones with as little as 4GB of RAM. Supports up to 2K context length.",
+      "sizeInBytes": 1159757824,
+      "minDeviceMemoryInGb": 4,
+      "commitHash": "766ec4afaaeeda64da162c458bac1efc0d27cf9e",
+      "llmSupportImage": true,
+      "llmSupportAudio": false,
+      "capabilities": [
+        "llm_thinking"
+      ],
+      "defaultConfig": {
+        "topK": 20,
+        "topP": 0.8,
+        "temperature": 0.7,
+        "maxContextLength": 2048,
+        "maxTokens": 2048,
+        "accelerators": "gpu,cpu",
+        "visionAccelerator": "gpu"
+      },
+      "taskTypes": [
+        "llm_chat",
+        "llm_prompt_lab",
+        "llm_agent_chat",
+        "llm_ask_image"
+      ],
+      "capabilityToTaskTypes": {
+        "llm_thinking": [
+          "llm_chat",
+          "llm_ask_image"
+        ]
+      },
+      "recommendedRamMinGb": 4,
+      "recommendedRamMaxGb": 6
+    },
+    {
+      "name": "MobileActions-270M",
+      "modelId": "litert-community/functiongemma-mobile-actions_q8_ekv1024.litertlm",
+      "modelFile": "mobile-actions_q8_ekv1024.litertlm",
+      "description": "Fine-tuned Function Gemma 270M model for Mobile Actions.",
+      "sizeInBytes": 284426240,
+      "minDeviceMemoryInGb": 2,
+      "commitHash": "5683618019f1025f4dd567d26f58dc0ebb6244f2",
+      "defaultConfig": {
+        "topK": 64,
+        "topP": 0.95,
+        "temperature": 0.0,
+        "maxTokens": 1024,
+        "accelerators": "cpu"
+      },
+      "taskTypes": [
+        "llm_mobile_actions"
+      ],
+      "bestForTaskTypes": [
+        "llm_mobile_actions"
+      ]
+    },
+    {
+      "name": "Magic touch",
+      "modelId": "magic_touch",
+      "modelFile": "interactive_segmentation.task",
+      "description": "This model identifies segments given image coordinates for an area of interest. The model uses a Convolutional Neural Network, similar to a MobileNetV3 architecture, with a customized decoder.",
+      "url": "https://storage.googleapis.com/mediapipe-models/interactive_segmenter_v2/magic_touch/int8/latest/interactive_segmentation.task",
+      "sizeInBytes": 30525312,
+      "commitHash": "20260810",
+      "taskTypes": [
+        "mp_scrapbook"
+      ],
+      "bestForTaskTypes": [
+        "mp_scrapbook"
+      ]
+    }
+  ]
+}

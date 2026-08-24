@@ -352,8 +352,12 @@ constructor(
       return
     }
 
-    // Delete the model files first.
-    deleteModel(model = model, removeImportedFromModelList = false)
+    // Resume a partial download of the same model version instead of wiping it. Otherwise delete
+    // the model files first (which also resets an updatable model to its latest version, so
+    // updates never resume a stale file).
+    if (model.updatable || !isModelPartiallyDownloaded(model)) {
+      deleteModel(model = model, removeImportedFromModelList = false)
+    }
 
     // Start to send download request.
     downloadRepository.downloadModel(
@@ -970,7 +974,12 @@ constructor(
         }
 
         if (modelAllowlist == null) {
-          _uiState.update { it.copy(loadingModelAllowlistError = "Failed to load model list") }
+          _uiState.update {
+            it.copy(
+              loadingModelAllowlist = false,
+              loadingModelAllowlistError = "Failed to load model list",
+            )
+          }
           return@launch
         }
 
@@ -1080,6 +1089,14 @@ constructor(
         Log.d(TAG, "loadModelAllowlist: Done")
       } catch (e: Exception) {
         Log.e(TAG, "Failed to load model allowlist", e)
+        // Clear the loading flag and surface the retry dialog; otherwise the home screen shows
+        // the loading spinner forever.
+        _uiState.update {
+          it.copy(
+            loadingModelAllowlist = false,
+            loadingModelAllowlistError = "Failed to load model list",
+          )
+        }
       }
     }
   }

@@ -48,6 +48,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -130,7 +133,7 @@ const val MERGED_DEFAULT_SYSTEM_PROMPT =
   """
   You are a helpful AI assistant on the user's phone. Answer questions and complete tasks directly, using your own knowledge and reasoning.
 
-  You can also use skills (including device actions like opening apps, playing music, flashlight, volume, and settings) and MCP tools:
+  You can also use skills (including device actions like opening apps, playing or controlling music, flashlight, volume, settings, alarms and timers, sharing text, opening websites, and web search) and MCP tools:
 
   --- SKILLS ---
   ___SKILLS___
@@ -140,6 +143,7 @@ const val MERGED_DEFAULT_SYSTEM_PROMPT =
 
   Rules for using them:
   - A name from the SKILLS list works ONLY with the `load_skill` tool: call `load_skill` with the skill's exact name, then follow the instructions it returns.
+  - ALWAYS call `load_skill` first. Never call `run_intent` or `run_js` before `load_skill` has returned the skill's instructions - the instructions tell you the exact parameters to use.
   - A name from the MCP TOOLS list works ONLY with the `runMcpTool` tool: call `runMcpTool` with `toolName` set to the tool's exact name and `input` set to a JSON object matching its schema.
   - Never pass a skill name to `runMcpTool`, and never pass an MCP tool name to `load_skill`.
   - If no skill or tool fits the request, just answer the user yourself. Never reply that no skill or tool was found.
@@ -152,13 +156,14 @@ const val MERGED_DEFAULT_SYSTEM_PROMPT_SKILLS_ONLY =
   """
   You are a helpful AI assistant on the user's phone. Answer questions and complete tasks directly, using your own knowledge and reasoning.
 
-  You can also use skills (including device actions like opening apps, playing music, flashlight, volume, and settings):
+  You can also use skills (including device actions like opening apps, playing or controlling music, flashlight, volume, settings, alarms and timers, sharing text, opening websites, and web search):
 
   --- SKILLS ---
   ___SKILLS___
 
   Rules for using them:
   - To use a skill, call the `load_skill` tool with the skill's exact name, then follow the instructions it returns.
+  - ALWAYS call `load_skill` first. Never call `run_intent` or `run_js` before `load_skill` has returned the skill's instructions - the instructions tell you the exact parameters to use.
   - Use a skill only when it clearly fits the request. Otherwise just answer the user yourself. Never reply that no relevant skill was found.
   """
 
@@ -214,15 +219,17 @@ constructor(
 
       // TODO: inject prompt expander as a dependency.
       val finalSystemPrompt =
-        PromptExpander()
-          .formatSystemInstructions(
-            template = baseSystemPrompt,
-            substitutions =
-              mapOf(
-                "___SKILLS___" to formatSelectedSkills(skillsProvider.getAvailableSkills()),
-                "___TOOLS___" to toolsPrompt,
-              ),
-          )
+        appendCurrentDateTime(
+          PromptExpander()
+            .formatSystemInstructions(
+              template = baseSystemPrompt,
+              substitutions =
+                mapOf(
+                  "___SKILLS___" to formatSelectedSkills(skillsProvider.getAvailableSkills()),
+                  "___TOOLS___" to toolsPrompt,
+                ),
+            )
+        )
 
       val config =
         AgentRuntimeConfig(
@@ -351,6 +358,17 @@ internal object AgentChatTaskModule {
       produceFile = { context.dataStoreFile("mcp_servers.pb") },
     )
   }
+}
+
+/**
+ * Appends the current date and time to a system prompt, so date-dependent skills (calendar,
+ * notifications, alarms) don't need a separate tool call and error-prone date arithmetic to
+ * resolve "tomorrow" or "this Friday".
+ */
+fun appendCurrentDateTime(prompt: String): String {
+  // Locale.US keeps the day name in English to match the (English) prompt around it.
+  val now = SimpleDateFormat("EEEE, yyyy-MM-dd HH:mm", Locale.US).format(Date())
+  return "$prompt\n\nCurrent date and time: $now"
 }
 
 // Check whether the system prompt is the default one.
