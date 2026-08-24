@@ -878,27 +878,16 @@ private fun TaskList(
           translationY = (CONTENT_COMPOSABLES_OFFSET_Y.dp * (1 - progress)).toPx()
         },
     ) {
-      val chatToDescription =
-        mapOf(
-          BuiltInTaskId.LLM_CHAT to stringResource(R.string.gemma_reskin_try_gemma_4_chat),
-          // use "\u00a0" to make sure the word before and after it should always be together when
-          // wrapping lines.
-          BuiltInTaskId.LLM_AGENT_CHAT to stringResource(R.string.gemma_reskin_try_gemma_4_skills),
-        )
-      for (task in
-        listOf(
-          modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_CHAT)!!,
-          modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_AGENT_CHAT)!!,
-        )) {
-        TaskCard(
-          task = task,
-          index = 0,
-          animate = !initialAnimationDone && enableAnimation,
-          onClick = { navigateToTaskScreen(task) },
-          modifier = Modifier.fillMaxWidth(),
-          description = chatToDescription[task.id]!!,
-        )
-      }
+      val chatTask = modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_CHAT)!!
+      TaskCard(
+        task = chatTask,
+        index = 0,
+        animate = !initialAnimationDone && enableAnimation,
+        onClick = { navigateToTaskScreen(chatTask) },
+        modifier = Modifier.fillMaxWidth(),
+        description = stringResource(R.string.gemma_reskin_try_gemma_4_chat),
+        large = true,
+      )
 
       Text(
         text = stringResource(R.string.explore_other_use_cases),
@@ -995,6 +984,8 @@ private fun TaskCard(
   modifier: Modifier = Modifier,
   description: String = "",
   square: Boolean = false,
+  // Renders a slightly larger card (used for the highlighted tile at the top).
+  large: Boolean = false,
 ) {
   // Observes the model count and updates the model count label with a fade-in/fade-out animation
   // whenever the count changes.
@@ -1089,13 +1080,15 @@ private fun TaskCard(
       }
     } else {
       Row(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 20.dp),
+        modifier =
+          Modifier.fillMaxSize()
+            .padding(horizontal = 24.dp, vertical = if (large) 28.dp else 20.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
       ) {
         if (description.isNotEmpty()) {
           // Icon.
-          TaskIcon(task = task, width = 40.dp)
+          TaskIcon(task = task, width = if (large) 48.dp else 40.dp)
 
           // Title and description.
           Column(modifier = Modifier.weight(1f).padding(start = 16.dp)) {
@@ -1107,7 +1100,12 @@ private fun TaskCard(
               Text(
                 task.label,
                 color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleMedium,
+                style =
+                  if (large) {
+                    MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, lineHeight = 24.sp)
+                  } else {
+                    MaterialTheme.typography.titleMedium
+                  },
               )
               if (task.newFeature) {
                 Box(
@@ -1131,7 +1129,10 @@ private fun TaskCard(
               description,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               style =
-                MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp, lineHeight = 15.sp),
+                MaterialTheme.typography.bodyMedium.copy(
+                  fontSize = if (large) 13.sp else 12.sp,
+                  lineHeight = if (large) 17.sp else 15.sp,
+                ),
               modifier = Modifier.clearAndSetSemantics {},
             )
           }

@@ -662,8 +662,7 @@
   <string name="config_label_max_char_count" translatable="false">Max character count</string>
   <string name="new_badge" translatable="true" description="Badge label indicating a new feature. [CHAR_LIMIT=8]">New</string>
   <!-- Home Screen Promos -->
-  <string name="gemma_reskin_try_gemma_4_chat" translatable="true" description="Promo card description to try Gemma 4 chat. [CHAR_LIMIT=65]">Chat with the latest Gemma 4 model today</string>
-  <string name="gemma_reskin_try_gemma_4_skills" translatable="true" description="Promo card description to try Gemma 4 skills. [CHAR_LIMIT=65]">Have Gemma 4 complete agentic tasks for\u00A0you</string>
+  <string name="gemma_reskin_try_gemma_4_chat" translatable="true" description="Description on the highlighted AI Chat card on the home screen. [CHAR_LIMIT=100]">Chat with on-device AI models, ask about images and audio, complete agentic tasks, and more!</string>
 
   <!-- Single-turn / Prompt Lab Placeholders -->
   <string name="prompt_lab_response_placeholder" translatable="true" description="Placeholder text indicating where the model response will appear. [CHAR_LIMIT=39]">Response will appear here</string>
