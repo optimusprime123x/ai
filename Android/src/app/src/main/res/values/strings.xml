@@ -29,9 +29,9 @@
   <string name="aichat_initializing_title" translatable="true" description="Status indicator when initializing model. [CHAR_LIMIT=31]">Initializing model</string>
   <string name="aichat_initializing_content" translatable="true" description="Loading message shown while a chat or translator session is initializing. [CHAR_LIMIT=110]">Sit tight, this can take up to 1 minute</string>
   <string name="app_intro" translatable="true" description="Introduction text shown on the home screen. [CHAR_LIMIT=90]">Explore a world of amazing on-device models from</string>
-  <string name="app_name" translatable="false">Google AI Edge Gallery</string>
-  <string name="app_name_first_part" translatable="false">Google AI</string>
-  <string name="app_name_second_part" translatable="false">Edge Gallery</string>
+  <string name="app_name" translatable="false">AI Playground</string>
+  <string name="app_name_first_part" translatable="false">Edge AI</string>
+  <string name="app_name_second_part" translatable="false">Playground</string>
   <string name="askimage_emptystate_title" translatable="false">Ask Image</string>
   <string name="askimage_emptystate_content" translatable="true" description="Instructions shown when starting a chat with image input, explaining how to add images (up to 10). [CHAR_LIMIT=203]">To get started, tap the + below to add an image (max 10 images per chat) and type a prompt to ask a question about it!</string>
   <string name="askimage_emptystate_content_aicore" translatable="true" description="Instructions shown when starting a chat with image input for AICore models, explaining how to add a single image. [CHAR_LIMIT=200]">To get started, tap the + below to add an image (max 1 image per chat) and type a prompt to ask a question about it!</string>
@@ -527,6 +527,16 @@
   <string name="model_badge_recommended" translatable="true" description="Label for the badge shown on models recommended for the device's RAM. [CHAR_LIMIT=20]">Recommended</string>
   <!-- Subtitle shown in the configuration dialog before a model is initialized. -->
   <string name="config_dialog_pre_init_subtitle" translatable="true" description="Subtitle shown under the Configurations heading before a model is initialized. [CHAR_LIMIT=70]">Tweak things if you want. Not sure? just press OK</string>
+  <!-- Title of the low RAM warning dialog shown on app start. -->
+  <string name="low_ram_warning_title" translatable="true" description="Title of the low RAM warning dialog shown on app start. [CHAR_LIMIT=30]">Warning - low RAM</string>
+  <!-- Description of the low RAM warning dialog. %1$s is the device RAM in GB. -->
+  <string name="low_ram_warning_description" translatable="true" description="Description of the low RAM warning dialog. The placeholder is the device RAM in GB. [CHAR_LIMIT=300]">Running AI models (LLMs) require significant system resources. Your device seems to have %1$s GB of RAM, which is unlikely to support running any of these models. Continue at your own risk.</string>
+  <!-- Clickable line in the low RAM warning dialog that opens the Mobile Actions page. -->
+  <string name="low_ram_warning_try_mobile_actions" translatable="true" description="Clickable line in the low RAM warning dialog that opens the Mobile Actions page. [CHAR_LIMIT=90]">If you would like to try the smaller Mobile Actions model, click here</string>
+  <!-- Button in the low RAM warning dialog that closes the app. -->
+  <string name="low_ram_warning_exit" translatable="true" description="Button in the low RAM warning dialog that closes the app. [CHAR_LIMIT=15]">Exit</string>
+  <!-- Button in the low RAM warning dialog that dismisses the warning. -->
+  <string name="low_ram_warning_continue" translatable="true" description="Button in the low RAM warning dialog that dismisses the warning. [CHAR_LIMIT=25]">Continue Anyways</string>
   <!-- Content description spoken when the "switch to keyboard" icon is focused. -->
   <string name="cd_switch_to_keyboard" translatable="true" description="Content description for the button to switch the input mode to keyboard text entry. [CHAR_LIMIT=30]">Switch to keyboard</string>
   <!-- Content description spoken when the "switch to voice" icon is focused. -->
@@ -662,8 +672,7 @@
   <string name="config_label_max_char_count" translatable="false">Max character count</string>
   <string name="new_badge" translatable="true" description="Badge label indicating a new feature. [CHAR_LIMIT=8]">New</string>
   <!-- Home Screen Promos -->
-  <string name="gemma_reskin_try_gemma_4_chat" translatable="true" description="Promo card description to try Gemma 4 chat. [CHAR_LIMIT=65]">Chat with the latest Gemma 4 model today</string>
-  <string name="gemma_reskin_try_gemma_4_skills" translatable="true" description="Promo card description to try Gemma 4 skills. [CHAR_LIMIT=65]">Have Gemma 4 complete agentic tasks for\u00A0you</string>
+  <string name="gemma_reskin_try_gemma_4_chat" translatable="true" description="Description on the highlighted AI Chat card on the home screen. [CHAR_LIMIT=100]">Chat with on-device AI models, ask about images and audio, complete agentic tasks, and more!</string>
 
   <!-- Single-turn / Prompt Lab Placeholders -->
   <string name="prompt_lab_response_placeholder" translatable="true" description="Placeholder text indicating where the model response will appear. [CHAR_LIMIT=39]">Response will appear here</string>

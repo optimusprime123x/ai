@@ -42,6 +42,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.ai.edge.gallery.data.AppBarAction
@@ -66,22 +69,43 @@ fun GalleryTopAppBar(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-          if (title == stringResource(R.string.app_name)) {
+          val isAppTitle = title == stringResource(R.string.app_name)
+          if (isAppTitle) {
             Icon(
               painterResource(R.drawable.logo),
               modifier = Modifier.size(20.dp),
               contentDescription = null,
               tint = Color.Unspecified,
             )
+            // Styled app title: "Edge AI" in the on-surface color and "Playground" in the
+            // primary color.
+            BasicText(
+              text =
+                buildAnnotatedString {
+                  withStyle(style = SpanStyle(color = titleColor)) {
+                    append(stringResource(R.string.app_name_first_part))
+                  }
+                  append(" ")
+                  withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                    append(stringResource(R.string.app_name_second_part))
+                  }
+                },
+              maxLines = 1,
+              color = { titleColor },
+              style = MaterialTheme.typography.titleMedium,
+              autoSize =
+                TextAutoSize.StepBased(minFontSize = 14.sp, maxFontSize = 16.sp, stepSize = 1.sp),
+            )
+          } else {
+            BasicText(
+              text = title,
+              maxLines = 1,
+              color = { titleColor },
+              style = MaterialTheme.typography.titleMedium,
+              autoSize =
+                TextAutoSize.StepBased(minFontSize = 14.sp, maxFontSize = 16.sp, stepSize = 1.sp),
+            )
           }
-          BasicText(
-            text = title,
-            maxLines = 1,
-            color = { titleColor },
-            style = MaterialTheme.typography.titleMedium,
-            autoSize =
-              TextAutoSize.StepBased(minFontSize = 14.sp, maxFontSize = 16.sp, stepSize = 1.sp),
-          )
         }
         if (subtitle.isNotEmpty()) {
           Text(

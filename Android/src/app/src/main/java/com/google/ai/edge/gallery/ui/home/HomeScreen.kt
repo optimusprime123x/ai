@@ -20,6 +20,7 @@ package com.google.ai.edge.gallery.ui.home
 // import com.google.ai.edge.gallery.ui.theme.GalleryTheme
 // import com.google.ai.edge.gallery.ui.preview.PreviewModelManagerViewModel
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -126,9 +127,11 @@ import com.google.ai.edge.gallery.ui.common.RevealingText
 import com.google.ai.edge.gallery.ui.common.SwipingText
 import com.google.ai.edge.gallery.ui.common.TaskIcon
 import com.google.ai.edge.gallery.ui.common.buildTrackableUrlAnnotatedString
+import com.google.ai.edge.gallery.ui.common.getDeviceMemInGb
 import com.google.ai.edge.gallery.ui.common.rememberDelayedAnimationProgress
 import com.google.ai.edge.gallery.ui.common.tos.AppTosDialog
 import com.google.ai.edge.gallery.ui.common.tos.TosViewModel
+import java.util.Locale
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import com.google.ai.edge.gallery.ui.theme.customColors
 import com.google.ai.edge.gallery.ui.theme.homePageTitleStyle
@@ -146,6 +149,9 @@ private const val TITLE_SECOND_LINE_ANIMATION_START =
   ANIMATION_INIT_DELAY + (TITLE_FIRST_LINE_ANIMATION_DURATION * 0.5).toInt()
 private const val TASK_LIST_ANIMATION_START = TITLE_SECOND_LINE_ANIMATION_START + 110
 private const val TASK_CARD_ANIMATION_DELAY_OFFSET = 100
+// Devices with less than this much RAM (in GB) get a warning dialog on app start.
+private const val LOW_RAM_WARNING_THRESHOLD_GB = 4f
+
 private const val TASK_CARD_ANIMATION_DURATION = 600
 private const val CONTENT_COMPOSABLES_ANIMATION_DURATION = 1200
 private const val CONTENT_COMPOSABLES_OFFSET_Y = 16
@@ -175,6 +181,12 @@ fun HomeScreen(
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val isDevBuild = context.packageName.endsWith(".dev")
+
+  // Low RAM warning shown on app start for devices unlikely to run the default models.
+  val deviceMemInGb = remember { getDeviceMemInGb(context) }
+  var showLowRamWarning by remember {
+    mutableStateOf(deviceMemInGb != null && deviceMemInGb < LOW_RAM_WARNING_THRESHOLD_GB)
+  }
 
   var tasks = uiState.tasks
 
@@ -515,6 +527,45 @@ fun HomeScreen(
     )
   }
 
+  // Low RAM warning (shown after the TOS dialog is out of the way).
+  if (showLowRamWarning && !showTosDialog) {
+    AlertDialog(
+      onDismissRequest = { showLowRamWarning = false },
+      title = { Text(stringResource(R.string.low_ram_warning_title)) },
+      text = {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+          Text(
+            stringResource(
+              R.string.low_ram_warning_description,
+              String.format(Locale.US, "%.1f", deviceMemInGb),
+            )
+          )
+          Text(
+            stringResource(R.string.low_ram_warning_try_mobile_actions),
+            color = MaterialTheme.colorScheme.primary,
+            modifier =
+              Modifier.clickable {
+                showLowRamWarning = false
+                modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_MOBILE_ACTIONS)?.let {
+                  navigateToTaskScreen(it)
+                }
+              },
+          )
+        }
+      },
+      confirmButton = {
+        TextButton(onClick = { showLowRamWarning = false }) {
+          Text(stringResource(R.string.low_ram_warning_continue))
+        }
+      },
+      dismissButton = {
+        TextButton(onClick = { (context as? Activity)?.finish() }) {
+          Text(stringResource(R.string.low_ram_warning_exit))
+        }
+      },
+    )
+  }
+
   // Settings dialog.
   if (showSettingsDialog) {
     SettingsDialog(
@@ -629,8 +680,8 @@ private fun AppTitle(enableAnimation: Boolean) {
 
 @Composable
 fun AppTitleGm4(enableAnimation: Boolean) {
-  val text1 = "Google"
-  val text2 = "AI Edge Gallery"
+  val text1 = stringResource(R.string.app_name_first_part)
+  val text2 = stringResource(R.string.app_name_second_part)
   val annotatedText = buildAnnotatedString {
     withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onSurface)) { append(text1) }
     append(" ")
@@ -878,27 +929,16 @@ private fun TaskList(
           translationY = (CONTENT_COMPOSABLES_OFFSET_Y.dp * (1 - progress)).toPx()
         },
     ) {
-      val chatToDescription =
-        mapOf(
-          BuiltInTaskId.LLM_CHAT to stringResource(R.string.gemma_reskin_try_gemma_4_chat),
-          // use "\u00a0" to make sure the word before and after it should always be together when
-          // wrapping lines.
-          BuiltInTaskId.LLM_AGENT_CHAT to stringResource(R.string.gemma_reskin_try_gemma_4_skills),
-        )
-      for (task in
-        listOf(
-          modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_CHAT)!!,
-          modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_AGENT_CHAT)!!,
-        )) {
-        TaskCard(
-          task = task,
-          index = 0,
-          animate = !initialAnimationDone && enableAnimation,
-          onClick = { navigateToTaskScreen(task) },
-          modifier = Modifier.fillMaxWidth(),
-          description = chatToDescription[task.id]!!,
-        )
-      }
+      val chatTask = modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_CHAT)!!
+      TaskCard(
+        task = chatTask,
+        index = 0,
+        animate = !initialAnimationDone && enableAnimation,
+        onClick = { navigateToTaskScreen(chatTask) },
+        modifier = Modifier.fillMaxWidth(),
+        description = stringResource(R.string.gemma_reskin_try_gemma_4_chat),
+        large = true,
+      )
 
       Text(
         text = stringResource(R.string.explore_other_use_cases),
@@ -995,6 +1035,8 @@ private fun TaskCard(
   modifier: Modifier = Modifier,
   description: String = "",
   square: Boolean = false,
+  // Renders a slightly larger card (used for the highlighted tile at the top).
+  large: Boolean = false,
 ) {
   // Observes the model count and updates the model count label with a fade-in/fade-out animation
   // whenever the count changes.
@@ -1089,13 +1131,15 @@ private fun TaskCard(
       }
     } else {
       Row(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 20.dp),
+        modifier =
+          Modifier.fillMaxSize()
+            .padding(horizontal = 24.dp, vertical = if (large) 28.dp else 20.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
       ) {
         if (description.isNotEmpty()) {
           // Icon.
-          TaskIcon(task = task, width = 40.dp)
+          TaskIcon(task = task, width = if (large) 48.dp else 40.dp)
 
           // Title and description.
           Column(modifier = Modifier.weight(1f).padding(start = 16.dp)) {
@@ -1107,7 +1151,12 @@ private fun TaskCard(
               Text(
                 task.label,
                 color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleMedium,
+                style =
+                  if (large) {
+                    MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, lineHeight = 24.sp)
+                  } else {
+                    MaterialTheme.typography.titleMedium
+                  },
               )
               if (task.newFeature) {
                 Box(
@@ -1131,7 +1180,10 @@ private fun TaskCard(
               description,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               style =
-                MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp, lineHeight = 15.sp),
+                MaterialTheme.typography.bodyMedium.copy(
+                  fontSize = if (large) 13.sp else 12.sp,
+                  lineHeight = if (large) 17.sp else 15.sp,
+                ),
               modifier = Modifier.clearAndSetSemantics {},
             )
           }

@@ -1,15 +1,18 @@
-# Google AI Edge Gallery ✨
+# Edge AI Playground ✨
 
-## Changes
+## Changes from google's version
 
 * Show live generation speed in t/s (with a speedometer icon) during all model generations.
-* Show model name instead of placeholder in chat.
-* Publish the release APK as a workflow artifact and an automatic GitHub release; version 1.0.0.
-* Split release APKs by architecture (arm64-v8a, armeabi-v7a, x86_64) alongside the universal APK.
-* Fix the default model list by self-hosting the model allowlist in this repo; remove Gemma 3/3n and DeepSeek-R1-Distill from the defaults.
+* Show model name instead of placeholder in chat UI.
+* Publish the release APK split by architecture.
+* remove Gemma 3/3n and DeepSeek-R1-Distill from the defaults.
 * Remove the Tiny Garden mini-game entirely.
 * Add vision and uncensored badges to model lists, and add the SuperGemma4-E4B-abliterated model to the defaults.
 * Show the configuration dialog before model initialization, remember per-model config tweaks, and add a RAM-based recommended badge.
+* Bump to version 1.1.0, with a CI guard ensuring every app version ships with its model allowlist.
+* Simplify the home showcase to a single, larger AI Chat card with an updated description.
+* Remove Qwen2.5 from the default model list, warn on app start when the device has less than 4GB of RAM (pointing to Mobile Actions), and list Mobile Actions first among the other use cases.
+* Switch the Mobile Actions model to an ungated HuggingFace repo so it does not need auth.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/google-ai-edge/gallery)](https://github.com/google-ai-edge/gallery/releases)
@@ -59,9 +62,9 @@ The latest version brings official support for the newly released Gemma 4 family
 
 1. **Check OS Requirement**: Android 12 and up, and iOS 17 and up.
 2.  **Download the App:**
-    - Install the app from [Google Play](https://play.google.com/store/apps/details?id=com.google.ai.edge.gallery) or [App Store](https://apps.apple.com/us/app/google-ai-edge-gallery/id6749645337).
-    - For users without Google Play access: install the apk from the [**latest release**](https://github.com/google-ai-edge/gallery/releases/latest/)
-3.  **Install & Explore:** For detailed installation instructions (including for corporate devices) and a full user guide, head over to our [**Project Wiki**](https://github.com/google-ai-edge/gallery/wiki)!
+   - check releases 
+   [**Install the app today from the latest release**](https://github.com/optimusprime123x/ai/releases/latest/)
+
 
 ## 🛠️ Technology Highlights
 
