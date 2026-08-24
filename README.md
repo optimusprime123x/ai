@@ -16,12 +16,11 @@
 * Simplify the home showcase to a single, larger AI Chat card with an updated description.
 * Remove Qwen2.5 from the default model list, warn on app start when the device has less than 4GB of RAM (pointing to Mobile Actions), and list Mobile Actions first among the other use cases.
 * Switch the Mobile Actions model to an ungated HuggingFace repo so it does not need auth.
-* The home screen's suggested AI Chat now launches a merged chat with skills, MCP tools, thinking, multimodal input, and the agent system prompt; the classic AI Chat and Agent Skills tasks remain available in the task list. 
-* Name the home screen's merged chat tile "AI Chat Complete", fix the crash when opening it, and bump to version 1.3.0.
+* The home screen's suggested AI Chat Complete now launches a merged chat with skills, MCP tools, thinking, multimodal input, and the agent system prompt; the classic AI Chat and Agent Skills tasks remain available in the task list. 
 * Give AI Chat Complete its own chat-first system prompt and empty state, keep the Agent Skills greedy TopK override out of it (and out of the saved defaults), and bump to version 1.4.0.
 * Move the model config button next to the back arrow, and add a "+" new-chat button in the top bar (moved out of the chat history sheet).
 * Add device actions as built-in skills (open apps, play music, flashlight, volume, settings panels), tighten the AI Chat Complete prompt, and make tool/skill mix-ups self-correcting for small models; bump to version 1.5.0.
-* Remove the never-functional Firebase Analytics/FCM stack (drops the accounts/push permissions and shrinks the APK), show the remaining-time estimate during model downloads, and drop the stale "history does not persist" notice.
+* Remove the Firebase Analytics/FCM stack (drops the accounts/push permissions and shrinks the APK), show the remaining-time estimate during model downloads, and drop the stale "history does not persist" notice.
 * Fix the model list loading forever with no retry when the allowlist fetch fails, add the multimodal Qwen3.5-0.8B model (recommended for 4-6GB devices), and align the Gemma memory requirements with the recommendation tiers (E2B needs 6GB, E4B needs 8GB); bump to version 1.6.0.
 * Make multi-GB downloads survivable: resume instead of restarting after a failure, retry transient network errors with backoff, wait for connectivity, and verify the downloaded size (plus guard against servers that ignore range requests).
 * Serve models more robustly: fall back from GPU to CPU when engine init fails, restore chat history after an error re-initializes the session, bound the allowlist fetch with timeouts, fix the max-tokens slider on small-context models, and stop a failed benchmark from wedging the screen.
