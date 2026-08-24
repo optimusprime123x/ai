@@ -54,7 +54,6 @@ import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import com.google.ai.edge.gallery.ui.theme.GalleryTheme
 import com.google.ai.edge.litertlm.ExperimentalApi
 import com.google.ai.edge.litertlm.ExperimentalFlags
-import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -208,7 +207,7 @@ class MainActivity : ComponentActivity() {
     super.onResume()
 
     firebaseAnalytics?.logEvent(
-      FirebaseAnalytics.Event.APP_OPEN,
+      "app_open",
       bundleOf(
         "app_version" to BuildConfig.VERSION_NAME,
         "os_version" to Build.VERSION.SDK_INT.toString(),
