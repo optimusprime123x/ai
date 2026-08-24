@@ -38,6 +38,20 @@ jobs:
             exit 1
           fi
           echo "Found model allowlist for version $VERSION"
+      - name: Set up signing keystore
+        # Decodes the shared signing keystore from the SIGNING_KEYSTORE_BASE64 repo secret so
+        # CI builds all carry the same signature and install as updates over each other. When
+        # the secret is not configured, gradle falls back to debug signing.
+        env:
+          KEYSTORE_B64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            mkdir -p app/signing
+            echo "$KEYSTORE_B64" | base64 -d > app/signing/shared.keystore
+            echo "Signing keystore installed."
+          else
+            echo "SIGNING_KEYSTORE_BASE64 secret not set; using default debug signing."
+          fi
       - name: Build
         run: ./gradlew assembleDebug
       - name: Unit tests

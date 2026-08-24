@@ -319,6 +319,19 @@ fun LabelRow(config: LabelConfig, values: SnapshotStateMap<String, Any>) {
   }
 }
 
+/**
+ * Reads a slider value from the config values map, tolerating values persisted with a different
+ * type (e.g. "Max tokens" saved as a String when the model's config was a label, then restored
+ * into a build where it is a slider).
+ */
+private fun getSliderValue(values: SnapshotStateMap<String, Any>, config: NumberSliderConfig): Float {
+  return when (val value = values[config.key.label]) {
+    is Number -> value.toFloat()
+    is String -> value.toFloatOrNull() ?: config.defaultValue
+    else -> config.defaultValue
+  }
+}
+
 fun getTextFieldDisplayValue(valueType: ValueType, value: Float): String {
   return try {
     when (valueType) {
@@ -368,17 +381,12 @@ fun NumberSliderRow(config: NumberSliderConfig, values: SnapshotStateMap<String,
       // value or out of the slider range, temporary while user is still editing the text.
       var textFieldDisplayValue by remember {
         mutableStateOf(
-          getTextFieldDisplayValue(config.valueType, values[config.key.label] as Float)
+          getTextFieldDisplayValue(config.valueType, getSliderValue(values, config))
         )
       }
 
       // Number slider.
-      val sliderValue =
-        try {
-          values[config.key.label] as Float
-        } catch (e: Exception) {
-          0f
-        }
+      val sliderValue = getSliderValue(values, config)
 
       Slider(
         modifier = Modifier.height(24.dp).weight(1f).padding(end = 8.dp),
@@ -402,7 +410,7 @@ fun NumberSliderRow(config: NumberSliderConfig, values: SnapshotStateMap<String,
             // When leaving focus, display the internal value so that any invalid value is cleared.
             if (!isFocused) {
               textFieldDisplayValue =
-                getTextFieldDisplayValue(config.valueType, values[config.key.label] as Float)
+                getTextFieldDisplayValue(config.valueType, getSliderValue(values, config))
             }
           },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -437,12 +445,7 @@ fun NumberSliderRow(config: NumberSliderConfig, values: SnapshotStateMap<String,
     }
 
     if (config.key == ConfigKeys.MAX_TOKENS) {
-      val sliderValue =
-        try {
-          values[config.key.label] as Float
-        } catch (e: Exception) {
-          0f
-        }
+      val sliderValue = getSliderValue(values, config)
       if (sliderValue >= 10000f) {
         Text(
           text = stringResource(R.string.max_tokens_warning_message),

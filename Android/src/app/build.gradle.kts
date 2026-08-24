@@ -36,8 +36,8 @@ android {
     applicationId = "dev.optimus.aiplayground"
     minSdk = 31
     targetSdk = 37
-    versionCode = 43
-    versionName = "1.1.0"
+    versionCode = 44
+    versionName = "1.2.0"
 
     // Needed for HuggingFace auth workflows.
     // Use the scheme of the "Redirect URLs" in HuggingFace app.
@@ -51,11 +51,41 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  // A fixed keystore so every build — local or CI — carries the same signature and installs as an
+  // update over previous versions (auto-generated debug keys differ per machine, which forces a
+  // reinstall). The key is public by design: it provides update continuity for this fork, not
+  // authenticity. When the file is absent, builds fall back to the default debug signing.
+  val sharedKeystore = file("signing/shared.keystore")
+  signingConfigs {
+    if (sharedKeystore.exists()) {
+      create("shared") {
+        storeFile = sharedKeystore
+        storePassword = "aiplayground"
+        keyAlias = "aiplayground"
+        keyPassword = "aiplayground"
+      }
+    }
+  }
+
   buildTypes {
+    debug {
+      if (sharedKeystore.exists()) {
+        signingConfig = signingConfigs.getByName("shared")
+      }
+    }
     release {
-      isMinifyEnabled = false
+      // Shrink unused library code and resources. The app's own classes (and the inference
+      // runtimes) are kept unobfuscated via proguard-rules.pro to avoid breaking Gson/JNI
+      // reflection.
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("debug")
+      signingConfig =
+        if (sharedKeystore.exists()) {
+          signingConfigs.getByName("shared")
+        } else {
+          signingConfigs.getByName("debug")
+        }
     }
   }
 
