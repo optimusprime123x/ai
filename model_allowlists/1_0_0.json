@@ -140,7 +140,22 @@
         "llm_prompt_lab",
         "llm_agent_chat",
         "llm_ask_image"
-      ]
+      ],
+      "capabilities": [
+        "llm_thinking",
+        "speculative_decoding"
+      ],
+      "capabilityToTaskTypes": {
+        "llm_thinking": [
+          "llm_chat",
+          "llm_ask_image"
+        ],
+        "speculative_decoding": [
+          "llm_chat",
+          "llm_ask_image",
+          "llm_prompt_lab"
+        ]
+      }
     },
     {
       "name": "Qwen2.5-1.5B-Instruct",
