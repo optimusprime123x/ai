@@ -113,7 +113,8 @@ fun TaskIcon(
 
 @Composable
 private fun getTaskIconBgShape(task: Task): Painter {
-  val colorIndex: Int = task.index % SHAPES.size
+  // Tasks hidden from the task list never get an index assigned (it stays -1), so clamp it.
+  val colorIndex: Int = (task.index.coerceAtLeast(0)) % SHAPES.size
   return painterResource(SHAPES[colorIndex])
 }
 

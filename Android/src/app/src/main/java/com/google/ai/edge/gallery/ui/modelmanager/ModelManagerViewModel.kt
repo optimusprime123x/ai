@@ -1046,6 +1046,14 @@ constructor(
             val task = curTasks.find { it.id == taskType }
             task?.models?.add(model)
           }
+          // The merged chat task (home screen tile) mirrors the classic AI Chat's models, so
+          // allowlists don't need a separate llm_chat_merged entry.
+          if (
+            allowedModel.taskTypes.contains(BuiltInTaskId.LLM_CHAT) &&
+              !allowedModel.taskTypes.contains(BuiltInTaskId.LLM_CHAT_MERGED)
+          ) {
+            curTasks.find { it.id == BuiltInTaskId.LLM_CHAT_MERGED }?.models?.add(model)
+          }
         }
 
         // Find models from allowlist if a task's `modelNames` field is not empty.
@@ -1269,6 +1277,7 @@ constructor(
       capabilityToTaskTypes[ModelCapability.LLM_THINKING] =
         listOf(
           BuiltInTaskId.LLM_CHAT,
+          BuiltInTaskId.LLM_CHAT_MERGED,
           BuiltInTaskId.LLM_ASK_IMAGE,
           BuiltInTaskId.LLM_ASK_AUDIO,
         )
@@ -1278,6 +1287,7 @@ constructor(
       capabilityToTaskTypes[ModelCapability.SPECULATIVE_DECODING] =
         listOf(
           BuiltInTaskId.LLM_CHAT,
+          BuiltInTaskId.LLM_CHAT_MERGED,
           BuiltInTaskId.LLM_ASK_IMAGE,
           BuiltInTaskId.LLM_ASK_AUDIO,
           BuiltInTaskId.LLM_PROMPT_LAB,

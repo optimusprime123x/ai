@@ -218,7 +218,7 @@ data class AllowedModel(
       llmMaxToken = llmMaxToken,
       accelerators = accelerators,
       visionAccelerator = visionAccelerator,
-      bestForTaskIds = bestForTaskTypes ?: listOf(),
+      bestForTaskIds = (bestForTaskTypes ?: listOf()).withMergedChatTask(),
       localModelFilePathOverride = localModelFilePathOverride ?: "",
       isLlm = isLlmModel,
       runtimeType = runtimeType ?: RuntimeType.LITERT_LM,
@@ -226,7 +226,8 @@ data class AllowedModel(
       aicorePreference = aicorePreference,
       parentModelName = parentModelName,
       variantLabel = variantLabel,
-      capabilityToTaskTypes = capabilityToTaskTypes ?: emptyMap(),
+      capabilityToTaskTypes =
+        (capabilityToTaskTypes ?: emptyMap()).mapValues { it.value.withMergedChatTask() },
       updatableModelFiles = updatableModelFiles ?: listOf(),
       updateInfo = updateInfo ?: "",
       extraDataFiles = extraDataFiles ?: listOf(),
@@ -238,6 +239,18 @@ data class AllowedModel(
     return "$modelId/$modelFile"
   }
 }
+
+/**
+ * The merged chat task (the home screen's highlighted AI Chat tile) mirrors the classic AI Chat
+ * task, so allowlists don't need a separate `llm_chat_merged` entry: any task-type list naming
+ * `llm_chat` implicitly includes the merged task as well.
+ */
+private fun List<String>.withMergedChatTask(): List<String> =
+  if (contains(BuiltInTaskId.LLM_CHAT) && !contains(BuiltInTaskId.LLM_CHAT_MERGED)) {
+    this + BuiltInTaskId.LLM_CHAT_MERGED
+  } else {
+    this
+  }
 
 /** Specific device requirements grouped by a descriptive name. */
 data class NamedDeviceGroup(

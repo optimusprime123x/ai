@@ -28,30 +28,26 @@
         "llm_prompt_lab",
         "llm_agent_chat",
         "llm_ask_image",
-        "llm_ask_audio",
-        "llm_chat_merged"
+        "llm_ask_audio"
       ],
       "bestForTaskTypes": [
         "llm_chat",
         "llm_prompt_lab",
         "llm_agent_chat",
         "llm_ask_image",
-        "llm_ask_audio",
-        "llm_chat_merged"
+        "llm_ask_audio"
       ],
       "capabilityToTaskTypes": {
         "llm_thinking": [
           "llm_chat",
           "llm_ask_image",
-          "llm_ask_audio",
-          "llm_chat_merged"
+          "llm_ask_audio"
         ],
         "speculative_decoding": [
           "llm_chat",
           "llm_ask_image",
           "llm_ask_audio",
-          "llm_prompt_lab",
-          "llm_chat_merged"
+          "llm_prompt_lab"
         ]
       },
       "updatableModelFiles": [
@@ -92,30 +88,26 @@
         "llm_prompt_lab",
         "llm_agent_chat",
         "llm_ask_image",
-        "llm_ask_audio",
-        "llm_chat_merged"
+        "llm_ask_audio"
       ],
       "bestForTaskTypes": [
         "llm_chat",
         "llm_prompt_lab",
         "llm_agent_chat",
         "llm_ask_image",
-        "llm_ask_audio",
-        "llm_chat_merged"
+        "llm_ask_audio"
       ],
       "capabilityToTaskTypes": {
         "llm_thinking": [
           "llm_chat",
           "llm_ask_image",
-          "llm_ask_audio",
-          "llm_chat_merged"
+          "llm_ask_audio"
         ],
         "speculative_decoding": [
           "llm_chat",
           "llm_ask_image",
           "llm_ask_audio",
-          "llm_prompt_lab",
-          "llm_chat_merged"
+          "llm_prompt_lab"
         ]
       },
       "updatableModelFiles": [
@@ -150,8 +142,7 @@
         "llm_chat",
         "llm_prompt_lab",
         "llm_agent_chat",
-        "llm_ask_image",
-        "llm_chat_merged"
+        "llm_ask_image"
       ],
       "capabilities": [
         "llm_thinking",
@@ -160,14 +151,12 @@
       "capabilityToTaskTypes": {
         "llm_thinking": [
           "llm_chat",
-          "llm_ask_image",
-          "llm_chat_merged"
+          "llm_ask_image"
         ],
         "speculative_decoding": [
           "llm_chat",
           "llm_ask_image",
-          "llm_prompt_lab",
-          "llm_chat_merged"
+          "llm_prompt_lab"
         ]
       }
     },

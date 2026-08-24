@@ -247,6 +247,9 @@ constructor(
       textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
       defaultSystemPrompt = DEFAULT_SYSTEM_PROMPT_TRIMMED,
       hideFromTaskList = true,
+      // Hidden tasks are skipped when task-list indices are assigned, but the index drives the
+      // icon shape and colors; 3 matches the classic AI Chat tile.
+      index = 3,
     )
   }
 }
