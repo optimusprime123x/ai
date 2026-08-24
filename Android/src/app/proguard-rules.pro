@@ -17,3 +17,12 @@
 # tasks-vision at runtime).
 -dontwarn com.google.mediapipe.proto.CalculatorProfileProto$CalculatorProfile
 -dontwarn com.google.mediapipe.proto.GraphTemplateProto$CalculatorGraphTemplate
+
+# Shrink only, don't rename anything: obfuscation is what typically breaks reflection-based
+# code at runtime, while dead-code removal provides nearly all of the size win.
+-dontobfuscate
+
+# Protobuf lite does not ship consumer rules and relies on reflection at runtime (used by the
+# settings/chat-history DataStore at app startup).
+-keep class com.google.protobuf.** { *; }
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
