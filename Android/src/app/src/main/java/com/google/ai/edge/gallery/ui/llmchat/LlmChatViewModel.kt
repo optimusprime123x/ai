@@ -244,23 +244,9 @@ open class LlmChatViewModelBase(
                 partialContent = thinkingText!!,
               )
             } else {
-              if (currentLastMessage?.type == ChatMessageType.THINKING) {
-                val thinkingMsg = currentLastMessage as ChatMessageThinking
-                if (thinkingMsg.inProgress) {
-                  replaceLastMessage(
-                    model = model,
-                    message =
-                      ChatMessageThinking(
-                        content = thinkingMsg.content,
-                        inProgress = false,
-                        side = thinkingMsg.side,
-                        accelerator = thinkingMsg.accelerator,
-                        hideSenderLabel = thinkingMsg.hideSenderLabel,
-                      ),
-                    type = ChatMessageType.THINKING,
-                  )
-                }
-              }
+              // The agent flow can append tool/progress messages after the thinking message, so
+              // finalize any in-progress thinking message wherever it sits in the conversation.
+              finalizeInProgressThinkingMessages(model = model)
               currentLastMessage = getLastMessage(model = model)
               if (
                 currentLastMessage?.type != ChatMessageType.TEXT ||
@@ -306,24 +292,7 @@ open class LlmChatViewModelBase(
             }
           }
           is AgentEvent.LoopTerminated -> {
-            val finalLastMessage = getLastMessage(model = model)
-            if (finalLastMessage?.type == ChatMessageType.THINKING) {
-              val thinkingMsg = finalLastMessage as ChatMessageThinking
-              if (thinkingMsg.inProgress) {
-                replaceLastMessage(
-                  model = model,
-                  message =
-                    ChatMessageThinking(
-                      content = thinkingMsg.content,
-                      inProgress = false,
-                      side = thinkingMsg.side,
-                      accelerator = thinkingMsg.accelerator,
-                      hideSenderLabel = thinkingMsg.hideSenderLabel,
-                    ),
-                  type = ChatMessageType.THINKING,
-                )
-              }
-            }
+            finalizeInProgressThinkingMessages(model = model)
             setInProgress(false)
             setPreparing(false)
             onDone()

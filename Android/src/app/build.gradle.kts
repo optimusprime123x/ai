@@ -36,8 +36,8 @@ android {
     applicationId = "dev.optimus.aiplayground"
     minSdk = 31
     targetSdk = 37
-    versionCode = 45
-    versionName = "1.3.0"
+    versionCode = 46
+    versionName = "1.4.0"
 
     // Needed for HuggingFace auth workflows.
     // Use the scheme of the "Redirect URLs" in HuggingFace app.

@@ -101,6 +101,7 @@ data class AllowedModel(
     // Config.
     val isLlmModel =
       taskTypes.contains(BuiltInTaskId.LLM_CHAT) ||
+        taskTypes.contains(BuiltInTaskId.LLM_CHAT_MERGED) ||
         taskTypes.contains(BuiltInTaskId.LLM_PROMPT_LAB) ||
         taskTypes.contains(BuiltInTaskId.LLM_ASK_AUDIO) ||
         taskTypes.contains(BuiltInTaskId.LLM_ASK_IMAGE) ||

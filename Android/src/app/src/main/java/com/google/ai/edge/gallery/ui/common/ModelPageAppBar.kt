@@ -18,13 +18,12 @@ package com.google.ai.edge.gallery.ui.common
 
 import android.os.Bundle
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -85,6 +84,7 @@ fun ModelPageAppBar(
   onSystemPromptChanged: (String) -> Unit = {},
   shouldShowHistoryButton: Boolean = false,
   onHistoryClicked: (Model) -> Unit = {},
+  onNewChatClicked: () -> Unit = {},
 ) {
   var showConfigDialog by remember { mutableStateOf(false) }
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
@@ -133,32 +133,23 @@ fun ModelPageAppBar(
       }
     },
     modifier = modifier,
-    // The back button.
+    // The back button and the model config button, to the left of the task header.
     navigationIcon = {
       val enableBackButton = !isModelInitializing && !inProgress
-      IconButton(onClick = onBackClicked, enabled = enableBackButton) {
-        Icon(
-          imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-          contentDescription = stringResource(R.string.cd_navigate_back_icon),
-        )
-      }
-    },
-    // The config button for the model (if existed).
-    actions = {
-      val downloadSucceeded = curDownloadStatus?.status == ModelDownloadStatusType.SUCCEEDED
-      val showConfigButton = model.configs.isNotEmpty() && downloadSucceeded
-      Box(modifier = Modifier.size(42.dp), contentAlignment = Alignment.Center) {
-        var configButtonOffset = 0.dp
-        if (showConfigButton && shouldShowHistoryButton) {
-          configButtonOffset = (-40).dp
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        IconButton(onClick = onBackClicked, enabled = enableBackButton) {
+          Icon(
+            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+            contentDescription = stringResource(R.string.cd_navigate_back_icon),
+          )
         }
-        if (showConfigButton) {
+        val downloadSucceeded = curDownloadStatus?.status == ModelDownloadStatusType.SUCCEEDED
+        if (model.configs.isNotEmpty() && downloadSucceeded) {
           val enableConfigButton = !isModelInitializing && !inProgress && isModelInitialized
           IconButton(
             onClick = { showConfigDialog = true },
             enabled = enableConfigButton,
-            modifier =
-              Modifier.offset(x = configButtonOffset).alpha(if (!enableConfigButton) 0.5f else 1f),
+            modifier = Modifier.alpha(if (!enableConfigButton) 0.5f else 1f),
           ) {
             Icon(
               imageVector = Icons.Rounded.Tune,
@@ -168,21 +159,37 @@ fun ModelPageAppBar(
             )
           }
         }
-        if (downloadSucceeded && shouldShowHistoryButton) {
-          val enableHistoryButton =
-            !isModelInitializing && !modelPreparing && !inProgress && isModelInitialized
-          IconButton(
-            onClick = { onHistoryClicked(model) },
-            enabled = enableHistoryButton,
-            modifier = Modifier.alpha(if (!enableHistoryButton) 0.5f else 1f),
-          ) {
-            Icon(
-              imageVector = Icons.Rounded.History,
-              contentDescription = stringResource(R.string.cd_chat_history),
-              tint = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.size(20.dp),
-            )
-          }
+      }
+    },
+    // The new-chat and chat-history buttons.
+    actions = {
+      val downloadSucceeded = curDownloadStatus?.status == ModelDownloadStatusType.SUCCEEDED
+      if (downloadSucceeded && shouldShowHistoryButton) {
+        val enableButtons =
+          !isModelInitializing && !modelPreparing && !inProgress && isModelInitialized
+        IconButton(
+          onClick = onNewChatClicked,
+          enabled = enableButtons,
+          modifier = Modifier.alpha(if (!enableButtons) 0.5f else 1f),
+        ) {
+          Icon(
+            imageVector = Icons.Rounded.Add,
+            contentDescription = stringResource(R.string.new_chat),
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(20.dp),
+          )
+        }
+        IconButton(
+          onClick = { onHistoryClicked(model) },
+          enabled = enableButtons,
+          modifier = Modifier.alpha(if (!enableButtons) 0.5f else 1f),
+        ) {
+          Icon(
+            imageVector = Icons.Rounded.History,
+            contentDescription = stringResource(R.string.cd_chat_history),
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(20.dp),
+          )
         }
       }
     },
@@ -269,9 +276,9 @@ fun ModelPageAppBar(
         model.prevConfigValues = oldConfigValues
         model.configValues = curConfigValues
         modelManagerViewModel.saveModelConfigValues(model = model)
-        if (
-          task.id == BuiltInTaskId.LLM_AGENT_CHAT || task.id == BuiltInTaskId.LLM_CHAT_MERGED
-        ) {
+        // Only the Agent Skills task uses the greedy-TopK override bookkeeping; the merged chat
+        // treats TopK as a regular config value.
+        if (task.id == BuiltInTaskId.LLM_AGENT_CHAT) {
           model.agentSkillTopKAdjusted = true
           model.agentSkillTopK = curConfigValues[ConfigKeys.TOPK.label]
         }

@@ -209,6 +209,35 @@ abstract class ChatViewModel(
     _uiState.update { it.copy(messagesByModel = newMessagesByModel) }
   }
 
+  /**
+   * Marks every in-progress thinking message for the model as done. The agent flow can append
+   * tool/progress messages after a thinking message, so finalizing only the last message would
+   * leave earlier thinking bubbles permanently in progress.
+   */
+  fun finalizeInProgressThinkingMessages(model: Model) {
+    val newMessagesByModel = _uiState.value.messagesByModel.toMutableMap()
+    val newMessages = newMessagesByModel[model.name]?.toMutableList() ?: return
+    var changed = false
+    for (index in newMessages.indices) {
+      val message = newMessages[index]
+      if (message is ChatMessageThinking && message.inProgress) {
+        newMessages[index] =
+          ChatMessageThinking(
+            content = message.content,
+            inProgress = false,
+            side = message.side,
+            accelerator = message.accelerator,
+            hideSenderLabel = message.hideSenderLabel,
+          )
+        changed = true
+      }
+    }
+    if (changed) {
+      newMessagesByModel[model.name] = newMessages
+      _uiState.update { it.copy(messagesByModel = newMessagesByModel) }
+    }
+  }
+
   fun updateLastTextMessageContentIncrementally(
     model: Model,
     partialContent: String,

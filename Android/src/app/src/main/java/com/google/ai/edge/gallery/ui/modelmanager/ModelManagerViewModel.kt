@@ -29,6 +29,7 @@ import com.google.ai.edge.gallery.common.ProjectConfig
 import com.google.ai.edge.gallery.common.SystemPromptHelper
 import com.google.ai.edge.gallery.common.getJsonResponse
 import com.google.ai.edge.gallery.common.isAICoreSupported
+import com.google.ai.edge.gallery.customtasks.agentchat.preAgentSkillTopK
 import com.google.ai.edge.gallery.customtasks.common.CustomTask
 import com.google.ai.edge.gallery.data.Accelerator
 import com.google.ai.edge.gallery.data.BuiltInTaskId
@@ -1321,7 +1322,12 @@ constructor(
 
   /** Persists the model's current config values so they become its defaults next time. */
   fun saveModelConfigValues(model: Model) {
-    dataStoreRepository.saveModelConfigValues(modelName = model.name, values = model.configValues)
+    val values = model.configValues.toMutableMap()
+    // While the Agent Skills screen is active, TopK carries its transient greedy override (see
+    // setupAgentSkillTopK); persist the value the user had before entering instead, so TopK=1
+    // doesn't become the model's default for every task after a restart.
+    model.preAgentSkillTopK?.let { values[ConfigKeys.TOPK.label] = it }
+    dataStoreRepository.saveModelConfigValues(modelName = model.name, values = values)
   }
 
   /**

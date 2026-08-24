@@ -732,6 +732,7 @@
   <!-- Task Labels & Descriptions -->
   <string name="task_label_ai_chat" translatable="false">AI Chat</string>
   <string name="task_label_ai_chat_complete" translatable="false">AI Chat Complete</string>
+  <string name="ai_chat_complete_intro" translatable="false">The full chat experience: converse with on-device models, ask about images and audio, toggle thinking, and use skills and MCP tools to complete real tasks.</string>
   <string name="task_label_prompt_lab" translatable="false">Prompt Lab</string>
   <string name="task_label_ask_image" translatable="false">Ask Image</string>
   <string name="task_label_audio_scribe" translatable="false">Audio Scribe</string>

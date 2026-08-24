@@ -209,7 +209,8 @@ fun GlobalModelManager(
     }
 
   val handleClickModel: (Model) -> Unit = { model ->
-    val tasks = viewModel.uiState.value.tasks
+    // Tasks hidden from the home task list (like the merged chat) stay out of the picker too.
+    val tasks = viewModel.uiState.value.tasks.filter { !it.hideFromTaskList }
     val tasksForModel = tasks.filter { task -> task.models.any { it.name == model.name } }
     // If there is only one task for the model, navigate to the model directly.
     if (tasksForModel.size == 1) {

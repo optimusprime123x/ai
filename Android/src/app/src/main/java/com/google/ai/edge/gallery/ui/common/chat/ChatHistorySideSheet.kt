@@ -21,7 +21,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,13 +29,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AddComment
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,7 +59,6 @@ fun ChatHistorySideSheetContent(
   onHistoryItemClicked: (String) -> Unit,
   onHistoryItemDeleted: (String) -> Unit,
   onHistoryItemsDeleteAll: () -> Unit,
-  onNewChatClicked: () -> Unit,
   onDismissed: () -> Unit,
 ) {
   var showConfirmDeleteDialog by remember { mutableStateOf(false) }
@@ -78,26 +74,6 @@ fun ChatHistorySideSheetContent(
       Text(stringResource(R.string.chat_history_title), style = MaterialTheme.typography.titleLarge)
       IconButton(onClick = onDismissed) {
         Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.cd_close_icon))
-      }
-    }
-
-    // Actions Row: "+ New chat" pill
-    Row(
-      modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-      horizontalArrangement = Arrangement.Start,
-      verticalAlignment = Alignment.CenterVertically,
-    ) {
-      Button(
-        onClick = onNewChatClicked,
-        colors =
-          ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-          ),
-      ) {
-        Icon(Icons.Rounded.AddComment, contentDescription = null, modifier = Modifier.size(18.dp))
-        Spacer(modifier = Modifier.size(8.dp))
-        Text(stringResource(R.string.new_chat))
       }
     }
 

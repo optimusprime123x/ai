@@ -192,12 +192,14 @@ fun AgentChatScreen(
   val modelInitStatus = modelManagerUiState.modelInitializationStatus[selectedModel.name]
 
   DisposableEffect(selectedModel.name, task.id) {
-    if (selectedModel.setupAgentSkillTopK()) {
+    // Greedy decoding (TopK=1) is an Agent Skills behavior; the merged chat keeps the model's
+    // configured TopK like the classic AI Chat.
+    if (task.id == BuiltInTaskId.LLM_AGENT_CHAT && selectedModel.setupAgentSkillTopK()) {
       modelManagerViewModel.updateConfigValuesUpdateTrigger()
     }
 
     onDispose {
-      if (selectedModel.cleanupAgentSkillTopK()) {
+      if (task.id == BuiltInTaskId.LLM_AGENT_CHAT && selectedModel.cleanupAgentSkillTopK()) {
         modelManagerViewModel.updateConfigValuesUpdateTrigger()
       }
     }
@@ -525,8 +527,12 @@ fun AgentChatScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
               )
+              val isMergedChat = task.id == BuiltInTaskId.LLM_CHAT_MERGED
               Text(
-                stringResource(R.string.agent_skills),
+                stringResource(
+                  if (isMergedChat) R.string.task_label_ai_chat_complete
+                  else R.string.agent_skills
+                ),
                 style =
                   MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Medium,
@@ -537,14 +543,18 @@ fun AgentChatScreen(
                 textAlign = TextAlign.Center,
               )
               Text(
-                AnnotatedString.fromHtml(
-                  stringResource(
-                    R.string.agent_skills_intro,
-                    AgentSkillsURLs.REPOSITORY,
-                    AgentSkillsURLs.DISCUSSIONS,
-                    stringResource(R.string.agent_skills),
+                if (isMergedChat) {
+                  AnnotatedString(stringResource(R.string.ai_chat_complete_intro))
+                } else {
+                  AnnotatedString.fromHtml(
+                    stringResource(
+                      R.string.agent_skills_intro,
+                      AgentSkillsURLs.REPOSITORY,
+                      AgentSkillsURLs.DISCUSSIONS,
+                      stringResource(R.string.agent_skills),
+                    )
                   )
-                ),
+                },
                 style =
                   MaterialTheme.typography.headlineSmall.copy(fontSize = 16.sp, lineHeight = 22.sp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
