@@ -189,7 +189,22 @@ class RunMcpTool(
     type: String,
   ): Map<String, String> {
     val isSkill = skillsProvider.loadSkill(name) != null
-    val error = if (isSkill) "$type not found. Try to run it as a skill" else "Tool not found"
+    val error =
+      if (isSkill) {
+        "\"$name\" is a skill, not an MCP tool. Call the load_skill tool with " +
+          "skillName=\"$name\", then follow the instructions it returns."
+      } else {
+        val availableTools =
+          mcpServersProvider.mcpServers.flatMap { it.mcpServer.toolsList.map { tool -> tool.name } }
+        if (availableTools.isEmpty()) {
+          "No MCP tools are available. If \"$name\" is a skill, call the load_skill tool; " +
+            "otherwise answer the user directly."
+        } else {
+          "Unknown MCP tool \"$name\". Available MCP tools: " +
+            availableTools.joinToString(", ") +
+            ". If you meant a skill, call the load_skill tool instead."
+        }
+      }
     return mapOf("error" to error, "status" to "failed")
   }
 

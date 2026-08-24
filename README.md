@@ -20,6 +20,7 @@
 * Name the home screen's merged chat tile "AI Chat Complete", fix the crash when opening it, and bump to version 1.3.0.
 * Give AI Chat Complete its own chat-first system prompt and empty state, keep the Agent Skills greedy TopK override out of it (and out of the saved defaults), and bump to version 1.4.0.
 * Move the model config button next to the back arrow, and add a "+" new-chat button in the top bar (moved out of the chat history sheet).
+* Add device actions as built-in skills (open apps, play music, flashlight, volume, settings panels), tighten the AI Chat Complete prompt, and make tool/skill mix-ups self-correcting for small models; bump to version 1.5.0.
 
 **Explore, Experience, and Evaluate the Future of On-Device Generative AI with Google AI Edge.**
 

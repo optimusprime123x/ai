@@ -36,8 +36,27 @@ class LoadSkillTool(private val skillsProvider: SkillsProvider) : ToolDefinition
     @ToolParam(description = "The name of the skill to load.") skillName: String
   ): Map<String, String> {
     return runBlocking(Dispatchers.Default) {
-      val skill = skillsProvider.loadSkill(skillName)
-      val skillContent = skill?.getSkillContent() ?: "Skill not found"
+      // Tolerate near-miss names from small models: try the exact name first, then a
+      // case-insensitive match with spaces/underscores normalized to hyphens.
+      var skill = skillsProvider.loadSkill(skillName)
+      if (skill == null) {
+        val normalized = skillName.trim().lowercase().replace(Regex("[\\s_]+"), "-")
+        val match =
+          skillsProvider.getAvailableSkills().find {
+            it.name.equals(skillName.trim(), ignoreCase = true) ||
+              it.name.equals(normalized, ignoreCase = true)
+          }
+        if (match != null) {
+          skill = skillsProvider.loadSkill(match.name)
+        }
+      }
+      val skillContent =
+        skill?.getSkillContent()
+          ?: ("Skill \"$skillName\" not found. Available skills: " +
+            skillsProvider.getAvailableSkills().filter { it.selected }.joinToString(", ") {
+              it.name
+            } +
+            ". Call load_skill again with one of these exact names, or answer the user directly.")
       Log.d(TAG, "load skill. Skill content:\n$skillContent")
       if (skill != null) {
         executionContext

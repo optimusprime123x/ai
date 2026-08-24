@@ -82,7 +82,15 @@ class RunIntentTool(private val context: Context, private val skillsProvider: Sk
     type: String,
   ): Map<String, String> {
     val isSkill = skillsProvider.loadSkill(name) != null
-    val error = if (isSkill) "$type not found. Try to run it as a skill" else "Tool not found"
+    val error =
+      if (isSkill) {
+        "\"$name\" is a skill, not an intent. Call the load_skill tool with " +
+          "skillName=\"$name\", then follow the instructions it returns."
+      } else {
+        "Unknown intent \"$name\". Valid intents: " +
+          IntentAction.entries.joinToString(", ") { it.action } +
+          ". If you meant a skill, call the load_skill tool instead."
+      }
     return mapOf("error" to error, "status" to "failed")
   }
 }

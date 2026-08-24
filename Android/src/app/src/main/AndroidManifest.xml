@@ -54,6 +54,18 @@
         android:required="false" />
     <uses-feature android:name="android.hardware.npu" android:required="false" />
 
+    <!-- Package visibility (Android 11+) for the agent device actions: open_app needs to list and
+         launch other apps' launcher activities, play_music needs to resolve a music app. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+        </intent>
+    </queries>
+
     <application
         android:name="${applicationName}"
         android:allowBackup="true"

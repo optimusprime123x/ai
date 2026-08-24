@@ -27,11 +27,11 @@ fun Skill.getSkillContent(): String {
 
 /** Formats descriptions of selected skills for inclusion in prompt placeholders. */
 fun formatSelectedSkills(skills: List<Skill>): String {
+  // One line per skill: a compact list is easier for small models to scan, and the quoted name
+  // makes it obvious what exact string to pass to load_skill.
   return skills
     .filter { it.selected }
-    .joinToString("\n\n") { skill ->
-      "- Skill name: \"${skill.name}\"\n- Description: ${skill.description}"
-    }
+    .joinToString("\n") { skill -> "- \"${skill.name}\": ${skill.description}" }
 }
 
 fun Skill.getJsSkillUrl(scriptName: String): String? {
